@@ -1,0 +1,13 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 160 160" role="img" aria-labelledby="title">
+  <title id="title">Blue ballpoint pen</title>
+  <g transform="rotate(35 80 80)" stroke="#374e51" stroke-width="3" stroke-linejoin="round">
+    <path d="M66 30h28v89H66z" fill="#3d85b8"/>
+    <path d="M74 35h8v78h-8z" fill="#77b9db" stroke="none"/>
+    <path d="M65 22h30v13H65z" fill="#234f78"/>
+    <path d="M71 15h18v8H71z" fill="#bdd2da"/>
+    <path d="M70 117h20l-3 15H73z" fill="#a8bac1"/>
+    <path d="m73 132 7 16 7-16z" fill="#d5dfe1"/>
+    <circle cx="80" cy="149" r="2" fill="#374e51" stroke="none"/>
+    <path d="M94 26h9v53h-9" fill="none" stroke="#234f78" stroke-width="4"/>
+  </g>
+</svg>

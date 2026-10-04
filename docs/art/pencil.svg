@@ -1,0 +1,13 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 160 160" role="img" aria-labelledby="title">
+  <title id="title">Yellow wooden pencil</title>
+  <g transform="rotate(35 80 80)" stroke="#374e51" stroke-width="3" stroke-linejoin="round">
+    <path d="M62 126V38h36v88L80 151z" fill="#f5bd4b"/>
+    <path d="M62 43h36v75H62z" fill="#f9cc63"/>
+    <path d="M75 43h10v75H75z" fill="#ffe4a3" stroke="none"/>
+    <path d="M62 126h36l-18 25z" fill="#e8c9a0"/>
+    <path d="m74 143 6 8 6-8z" fill="#374e51" stroke="none"/>
+    <path d="M62 27h36v17H62z" fill="#9cb3ba"/>
+    <path d="M63 13h34v15H63z" fill="#e99191"/>
+    <path d="M69 31v9m11-9v9m11-9v9" stroke="#6d8a91"/>
+  </g>
+</svg>

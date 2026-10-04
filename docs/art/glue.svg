@@ -1,0 +1,11 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 160 160" role="img" aria-labelledby="title">
+  <title id="title">Bottle of school glue</title>
+  <g stroke="#374e51" stroke-width="3" stroke-linejoin="round">
+    <path d="M64 18h32v24H64z" fill="#f0a94b"/>
+    <path d="M68 42h24v13H68z" fill="#f8d5a3"/>
+    <path d="M56 55h48l11 19v60c0 6-5 10-11 10H56c-6 0-11-4-11-10V74z" fill="#fff9ed"/>
+    <path d="M45 82h70v45H45z" fill="#85c1bd"/>
+    <path d="M45 75h70v10H45z" fill="#5ca8a4"/>
+  </g>
+  <text x="80" y="110" text-anchor="middle" fill="#235e5b" font-size="22" font-weight="800" font-family="Arial,sans-serif">GLUE</text>
+</svg>

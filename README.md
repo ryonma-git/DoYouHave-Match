@@ -15,6 +15,8 @@
 
 公開URL: https://ryonma-git.github.io/DoYouHave-Match/
 
+先生用の[アイテム一覧](https://ryonma-git.github.io/DoYouHave-Match/admin.html)では、現在使っている絵文字と差し替え候補のイラストを比較できます。候補は確認用で、ゲームにはまだ反映していません。
+
 ローカルではリポジトリのルートで `python3 -m http.server 8000 --directory docs` を実行し、`http://localhost:8000/` を開きます。静的ファイルのみで動作します。
 
 ## Swift版

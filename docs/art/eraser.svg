@@ -1,0 +1,8 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 160 160" role="img" aria-labelledby="title">
+  <title id="title">Pink rectangular pencil eraser with a paper sleeve</title>
+  <rect x="16" y="47" width="128" height="76" rx="14" fill="#f5a5b4" stroke="#374e51" stroke-width="4"/>
+  <path d="M28 48h16v74H28c-7 0-12-6-12-13V61c0-7 5-13 12-13z" fill="#f8bbc5"/>
+  <path d="M50 47h66v76H50z" fill="#fffaf0" stroke="#374e51" stroke-width="3"/>
+  <path d="M50 58h66m-66 54h66" stroke="#e0a0aa" stroke-width="4"/>
+  <text x="83" y="90" text-anchor="middle" fill="#355f60" font-size="14" font-weight="800" font-family="Arial,sans-serif">ERASER</text>
+</svg>

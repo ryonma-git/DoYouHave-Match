@@ -23,7 +23,7 @@ function render() {
   let content;
   switch (game.phase) {
     case PHASE.SETUP:
-      content = `<section class="welcome"><div class="brand-mark">✏️ <span>?</span> 📏</div><p class="eyebrow">LET'S TALK!</p><h1>Do You Have?</h1><p class="subtitle">Ask. Remember. Match.</p>${button('LET’S PLAY', 'begin', 'primary')}</section>`;
+      content = `<section class="welcome"><div class="brand-mark">✏️ <span>?</span> 📏</div><p class="eyebrow">LET'S TALK!</p><h1>Do You Have?</h1><p class="subtitle">Ask. Remember. Match.</p>${button('LET’S PLAY', 'begin', 'primary')}<a class="teacher-link" href="admin.html">先生用：アイテム一覧</a></section>`;
       break;
     case PHASE.MEMORIZE:
       content = `<header><p class="eyebrow">LOOK & REMEMBER</p><h1>YOUR ITEMS</h1></header>${cards()}<footer>${button("I'm ready!", 'ready', 'primary')}</footer>`;
