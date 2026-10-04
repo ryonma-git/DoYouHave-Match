@@ -78,7 +78,7 @@ struct ContentView: View {
         VStack(spacing: 18) {
             Spacer()
             Text("✏️  ?  📏").font(.system(size: 70))
-            eyebrow("LET'S TALK!")
+            eyebrow("友だちと話そう！")
             Text("Do You Have?").font(.system(size: 58, weight: .heavy, design: .rounded)).minimumScaleFactor(0.7).lineLimit(1)
                 .onTapGesture {
                     titleTaps = titleTaps.filter { Date().timeIntervalSince($0) < 1.8 }
@@ -88,21 +88,21 @@ struct ContentView: View {
                         if teacherAccess.canAttempt { passcode = ""; needsPasscode = true; teacherPresented = true }
                     }
                 }
-            Text("Ask. Remember. Match.").font(.title2).foregroundStyle(Palette.teal)
-            Text("出席番号").font(.headline)
+            Text("同じ持ち物の友だちを見つけよう").font(.title2).foregroundStyle(Palette.teal)
+            Text("出席番号を入れてね（1〜40）").font(.headline)
             TextField("1–40", text: $attendanceText)
                 .keyboardType(.numberPad).multilineTextAlignment(.center)
                 .font(.largeTitle.bold()).padding(10).frame(width: 170)
                 .background(.white, in: RoundedRectangle(cornerRadius: 14))
                 .onChange(of: attendanceText) { value in attendanceText = String(value.filter(\.isNumber).prefix(2)) }
-            action("LET’S PLAY", primary: true) {
+            action("はじめる", primary: true) {
                 if attendanceText == "99" {
                     pendingRoster = true
                     if teacherAccess.hasAccess { needsPasscode = false; teacherPresented = true }
                     else { setupError = "先生用です。タイトルから先生用メニューを開いてください。" }
                 } else if let number = Int(attendanceText), game.begin(number) {
                     teacherAccess.revoke(); pendingRoster = false; setupError = ""; titleTaps = []
-                } else { setupError = "出席番号（1〜40）と出席設定を確認してください。" }
+                } else { setupError = "出席番号を1〜40で入れてね。進めないときは先生に聞いてね。" }
             }
             Text(setupError).font(.footnote).foregroundStyle(.orange)
             Text("配布 \(game.classroom.pattern + 1) · \(game.classroom.selected.count)種類 · \(game.classroom.present.count)人").font(.caption).foregroundStyle(.secondary)
@@ -115,18 +115,18 @@ struct ContentView: View {
             if game.phase == .playing {
                 HStack {
                     VStack(alignment: .leading) {
-                        eyebrow("TIME")
+                        eyebrow("タイム")
                         Text(game.formattedTime).font(.system(size: 42, weight: .heavy, design: .rounded)).monospacedDigit()
                     }
                     Spacer()
                     VStack(alignment: .trailing) {
                         Text("\(game.matchCount) / 3").font(.system(size: 38, weight: .heavy, design: .rounded))
-                        eyebrow("MATCH")
+                        eyebrow("3枚そろえよう")
                     }
                 }
             } else {
-                eyebrow(game.phase == .memorize ? "LOOK & REMEMBER" : "TIME TO TALK")
-                Text(game.phase == .memorize ? "YOUR ITEMS" : "Remember your items?")
+                eyebrow(game.phase == .memorize ? "カードと場所をおぼえよう" : "友だちに英語で聞いてみよう")
+                Text(game.phase == .memorize ? "自分の持ち物" : "じゅんびはいい？")
                     .font(.system(size: 43, weight: .heavy, design: .rounded))
                     .minimumScaleFactor(0.65).lineLimit(1)
             }
@@ -139,18 +139,18 @@ struct ContentView: View {
                     }
                     .buttonStyle(.plain)
                     .disabled(game.phase != .playing)
-                    .accessibilityLabel("Card \(index + 1), \(game.faceUp[index] ? game.items[index].displayName : "face down")")
+                    .accessibilityLabel("カード\(index + 1)、\(game.faceUp[index] ? game.items[index].displayName : "うら向き")")
                 }
             }
             if game.phase == .playing {
-                Text(game.showPenalty ? "+5 sec" : " ").font(.title3.bold()).foregroundStyle(Color(red: 0.84, green: 0.4, blue: 0.21)).frame(height: 28)
+                Text(game.showPenalty ? "+5秒" : " ").font(.title3.bold()).foregroundStyle(Color(red: 0.84, green: 0.4, blue: 0.21)).frame(height: 28)
                 HStack(spacing: 16) {
-                    action("NEXT PERSON", primary: false, action: game.nextPerson)
-                    action("MATCH!", primary: true, enabled: game.matchCount >= 3, action: game.match)
+                    action("次の友だちへ", primary: false, action: game.nextPerson)
+                    action("そろった！", primary: true, enabled: game.matchCount >= 3, action: game.match)
                 }
             } else {
                 Spacer(minLength: 0)
-                action(game.phase == .memorize ? "I'm ready!" : "START", primary: true, action: game.phase == .memorize ? game.ready : game.start)
+                action(game.phase == .memorize ? "おぼえた！" : "スタート", primary: true, action: game.phase == .memorize ? game.ready : game.start)
             }
         }
     }
@@ -178,8 +178,8 @@ struct ContentView: View {
         VStack(spacing: 18) {
             Spacer()
             Text("✦  ✧  ✦").font(.largeTitle).foregroundStyle(Palette.orange)
-            Text("MATCH!").font(.system(size: 76, weight: .heavy, design: .rounded)).foregroundStyle(Palette.teal).minimumScaleFactor(0.7)
-            eyebrow("YOU BOTH HAVE...")
+            Text("そろった！").font(.system(size: 76, weight: .heavy, design: .rounded)).foregroundStyle(Palette.teal).minimumScaleFactor(0.7)
+            eyebrow("2人が持っているもの")
             HStack(spacing: 12) {
                 ForEach(game.matchedItems) { item in
                     VStack {
@@ -190,10 +190,11 @@ struct ContentView: View {
                     .background(.white, in: RoundedRectangle(cornerRadius: 18))
                 }
             }
+            Text("英語で言ってみよう").font(.headline).foregroundStyle(Palette.teal)
             Text(game.sentence).font(.title2.bold()).multilineTextAlignment(.center).padding(.vertical, 8)
-            eyebrow("TIME")
+            eyebrow("タイム")
             Text(game.formattedTime).font(.system(size: 54, weight: .heavy, design: .rounded)).monospacedDigit()
-            action("PLAY AGAIN", primary: true, action: game.reset)
+            action("もう一度あそぶ", primary: true, action: game.reset)
             Spacer()
         }
     }

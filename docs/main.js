@@ -45,9 +45,9 @@ function cards() {
   return `<div class="cards">${game.items.map((item, index) => {
     const open = game.faceUp[index];
     const interactive = game.phase === PHASE.PLAYING;
-    return `<button class="card ${open ? 'face-up' : 'face-down'}" data-flip="${index}" ${interactive ? '' : 'disabled'} aria-label="Card ${index + 1}, ${open ? item.name : 'face down'}">
+    return `<button class="card ${open ? 'face-up' : 'face-down'}" data-flip="${index}" ${interactive ? '' : 'disabled'} aria-label="カード${index + 1}、${open ? item.name : 'うら向き'}">
       <span class="card-index">${index + 1}</span>
-      <span class="card-content">${open ? `<span class="card-icon" aria-hidden="true">${item.icon}</span><span class="card-name">${item.name}</span>` : '<span class="question">?</span>'}</span>
+      <span class="card-content">${open ? `<span class="card-icon" aria-hidden="true">${item.icon}</span><span class="card-name" lang="en">${item.name}</span>` : '<span class="question">?</span>'}</span>
     </button>`;
   }).join('')}</div>`;
 }
@@ -60,19 +60,19 @@ function render() {
   let content;
   switch (game.phase) {
     case PHASE.SETUP:
-      content = `<section class="welcome"><div class="brand-mark">✏️ <span>?</span> 📏</div><p class="eyebrow">LET'S TALK!</p><h1><button id="game-title" type="button">Do You Have?</button></h1><p class="subtitle">Ask. Remember. Match.</p><form id="attendance-form"><label for="attendance">出席番号</label><input id="attendance" name="attendance" type="text" inputmode="numeric" pattern="[0-9]{1,2}" maxlength="2" autocomplete="off" required placeholder="1–40" aria-describedby="setup-error"><button class="action primary" type="submit" ${config ? '' : 'disabled'}>LET’S PLAY</button></form><p id="setup-error" class="setup-error" role="status">${setupError}</p>${config ? `<p class="class-summary">配布 ${config.pattern + 1} · ${config.selected.length}種類 · ${config.present.length}人</p>` : ''}</section>`;
+      content = `<section class="welcome"><div class="brand-mark">✏️ <span>?</span> 📏</div><p class="eyebrow">友だちと話そう！</p><h1><button id="game-title" type="button" lang="en">Do You Have?</button></h1><p class="subtitle">同じ持ち物の友だちを見つけよう</p><form id="attendance-form"><label for="attendance">出席番号を入れてね（1〜40）</label><input id="attendance" name="attendance" type="text" inputmode="numeric" pattern="[0-9]{1,2}" maxlength="2" autocomplete="off" required placeholder="1–40" aria-describedby="setup-error"><button class="action primary" type="submit" ${config ? '' : 'disabled'}>はじめる</button></form><p id="setup-error" class="setup-error" role="status">${setupError}</p>${config ? `<p class="class-summary">配布 ${config.pattern + 1} · ${config.selected.length}種類 · ${config.present.length}人</p>` : ''}</section>`;
       break;
     case PHASE.MEMORIZE:
-      content = `<header><p class="eyebrow">LOOK & REMEMBER</p><h1>YOUR ITEMS</h1></header>${cards()}<footer>${button("I'm ready!", 'ready', 'primary')}</footer>`;
+      content = `<header><p class="eyebrow">カードと場所をおぼえよう</p><h1>自分の持ち物</h1></header>${cards()}<footer>${button('おぼえた！', 'ready', 'primary')}</footer>`;
       break;
     case PHASE.READY:
-      content = `<header><p class="eyebrow">TIME TO TALK</p><h1>Remember your items?</h1></header>${cards()}<footer>${button('START', 'start', 'primary')}</footer>`;
+      content = `<header><p class="eyebrow">友だちに英語で聞いてみよう</p><h1>じゅんびはいい？</h1></header>${cards()}<footer>${button('スタート', 'start', 'primary')}</footer>`;
       break;
     case PHASE.PLAYING:
-      content = `<header class="play-header"><div class="time-badge"><span>TIME</span><strong id="timer">${formatTime(game.elapsedSeconds)}</strong></div><div class="match-count"><strong>${game.matchCount} / 3</strong><span>MATCH</span></div></header>${cards()}<div class="penalty ${game.penaltyNotice ? 'visible' : ''}" role="status">+5 sec</div><footer class="dual">${button('NEXT PERSON', 'next', 'secondary')}${button('MATCH!', 'match', `primary ${game.matchCount < 3 ? 'inactive' : ''}`)}</footer>`;
+      content = `<header class="play-header"><div class="time-badge"><span>タイム</span><strong id="timer">${formatTime(game.elapsedSeconds)}</strong></div><div class="match-count"><strong>${game.matchCount} / 3</strong><span>3枚そろえよう</span></div></header>${cards()}<div class="penalty ${game.penaltyNotice ? 'visible' : ''}" role="status">+5秒</div><footer class="dual">${button('次の友だちへ', 'next', 'secondary')}${button('そろった！', 'match', `primary ${game.matchCount < 3 ? 'inactive' : ''}`)}</footer>`;
       break;
     case PHASE.RESULT:
-      content = `<section class="result"><div class="celebration" aria-hidden="true">✦ ✧ ✦</div><h1>MATCH!</h1><p class="eyebrow">YOU BOTH HAVE...</p><div class="result-items">${game.matchedItems.map(item => `<div class="result-item"><span aria-hidden="true">${item.icon}</span><strong>${item.name}</strong></div>`).join('')}</div><p class="sentence">${sentence(game.matchedItems)}</p><div class="result-time">TIME <strong>${formatTime(game.elapsedSeconds)}</strong></div>${button('PLAY AGAIN', 'reset', 'primary')}</section>`;
+      content = `<section class="result"><div class="celebration" aria-hidden="true">✦ ✧ ✦</div><h1>そろった！</h1><p class="eyebrow">2人が持っているもの</p><div class="result-items">${game.matchedItems.map(item => `<div class="result-item"><span aria-hidden="true">${item.icon}</span><strong lang="en">${item.name}</strong></div>`).join('')}</div><p class="sentence-hint">英語で言ってみよう</p><p class="sentence" lang="en">${sentence(game.matchedItems)}</p><div class="result-time">タイム <strong>${formatTime(game.elapsedSeconds)}</strong></div>${button('もう一度あそぶ', 'reset', 'primary')}</section>`;
   }
   root.innerHTML = `<div class="shell ${game.phase}">${content}</div>`;
   const matchButton = root.querySelector('[data-action="match"]');
@@ -92,7 +92,7 @@ root.addEventListener('submit', event => {
   }
   if (!config) return;
   if (!game.begin(number, config)) {
-    setupError = number >= 1 && number <= 40 ? 'この番号は欠席に設定されています。先生に確認してください。' : '出席番号を1〜40で入力してください。';
+    setupError = number >= 1 && number <= 40 ? 'この番号は欠席になっています。先生に聞いてね。' : '出席番号を1〜40で入れてね。';
     render();
     return;
   }

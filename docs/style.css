@@ -40,6 +40,7 @@ footer { width: min(100%, 720px); display: flex; justify-content: center; gap: 1
 .result-items { display: flex; justify-content: center; flex-wrap: wrap; gap: 12px; margin: 12px 0 20px; }
 .result-item { background: #fffefa; border: 2px solid #d7e4d9; border-radius: 18px; padding: 10px 16px; display: flex; flex-direction: column; min-width: 120px; font-size: 1.25rem; }
 .result-item span { font-size: 2.6rem; }
+.sentence-hint { color: #54716e; margin: 0; font-weight: 700; }
 .sentence { font-size: clamp(1.15rem, 2.5vw, 1.65rem); font-weight: 700; max-width: 660px; }
 .result-time { font-weight: 900; letter-spacing: .1em; color: #5e8078; margin: 12px 0 26px; }
 .result-time strong { display: block; font-size: 2.8rem; letter-spacing: 0; color: #173b3b; }
