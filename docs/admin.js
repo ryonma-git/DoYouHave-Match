@@ -1,9 +1,8 @@
 import { ITEMS } from './items.js';
-import { PATTERN_SEEDS, loadConfig, validateConfig, statistics, assignments, randomMatchProbability, classURL, encodeConfig } from './room.js';
-import { hasAccess, revokeAccess } from './teacher-access.js';
+import { PATTERN_SEEDS, loadConfig, validateConfig, statistics, randomMatchProbability, classURL, encodeConfig } from './room.js';
+import { hasAccess, revokeAccess } from './teacher-access.js?v=2';
 
 const root = document.querySelector('#teacher-page');
-const isRoster = new URLSearchParams(location.search).get('roster') === '99';
 let config;
 
 function guard() {
@@ -13,23 +12,13 @@ function guard() {
   return false;
 }
 
-function rosterHTML() {
-  const deals = assignments(config);
-  const stats = statistics(config);
-  return `<section class="panel"><h2>配布一覧・出席番号99</h2><p>カード1〜4は児童の画面の左上・右上・左下・右下の順です。</p><div class="table-wrap"><table><thead><tr><th>番号</th><th>カード1</th><th>カード2</th><th>カード3</th><th>カード4</th><th>3枚以上共通する相手</th></tr></thead><tbody>${Array.from({ length: 40 }, (_, i) => i + 1).map(number => {
-    const cards = deals.get(number);
-    if (!cards) return `<tr class="absent-row"><th>${number}</th><td colspan="5">欠席・対象外</td></tr>`;
-    return `<tr><th>${number}</th>${cards.map(item => `<td>${item.name}</td>`).join('')}<td class="partner-list">${stats.partners.get(number).join(', ')}</td></tr>`;
-  }).join('')}</tbody></table></div></section>`;
-}
-
 function render() {
   if (!guard()) return;
   root.innerHTML = `<header class="heading"><a class="back" href="${classURL(config)}">← タイトルへ戻る</a><button class="small-button exit" id="lock">閉じてロック</button><p class="eyebrow">TEACHER MENU</p><h1>授業の準備</h1><p class="intro">使うアイテムと出席者を選び、同じ授業URLを全員に配ってください。</p></header>
   <section class="panel"><h2>1. 使用するアイテム</h2><p>4〜10種類から選択。児童にはそのうち4種類を配布します。画像は仮表示です。</p><div id="catalog" class="item-options">${ITEMS.map(item => `<label class="item-option"><input type="checkbox" name="item" value="${item.id}" ${config.selected.includes(item.id) ? 'checked' : ''}><span class="item-emoji" aria-hidden="true">${item.icon}</span><span><strong>${item.name}</strong><small>${item.japanese}</small></span></label>`).join('')}</div></section>
   <section class="panel"><h2>2. 出席者</h2><p>チェックを外した番号は欠席・対象外です。変更すると出席者だけで組み直します。</p><label class="class-size">最後の出席番号 <input type="number" id="last-number" min="2" max="40" value="${Math.max(...config.present)}"><button class="small-button" id="set-size">1〜この番号を出席にする</button></label><div class="attendance-grid">${Array.from({ length: 40 }, (_, i) => i + 1).map(number => `<label><input type="checkbox" name="present" value="${number}" ${config.present.includes(number) ? 'checked' : ''}><span>${number}</span></label>`).join('')}</div></section>
   <section class="panel"><h2>3. 配布パターン</h2><div class="pattern-control"><select id="pattern" aria-label="配布パターン">${PATTERN_SEEDS.map((_, i) => `<option value="${i}" ${config.pattern === i ? 'selected' : ''}>パターン ${i + 1}</option>`).join('')}</select><button id="random-pattern" class="small-button">ランダムに選び直す</button></div><p>出席番号とパターンが同じなら、同じカード・同じ位置になります。</p><div id="metrics"></div><p class="error" id="config-error" role="status"></p></section>
-  <section class="panel"><h2>4. 授業URLを配る</h2><p>このURLにアイテム・出席者・パターンが入っています。変更したら、新しいURLを全員に配り直してください。</p><textarea id="share-url" readonly aria-label="児童用の授業URL" rows="3"></textarea><div class="share-actions"><button class="primary-button" id="copy-url">URLをコピー</button><a id="open-game" class="small-button" href="${classURL(config)}">この設定でゲームを開く</a></div><p id="copy-status" role="status"></p><p class="note">誰に何が配られるかは、タイトル画面で <strong>99</strong> を入力すると確認できます。先生用認証が必要です。</p></section><div id="roster">${isRoster ? rosterHTML() : ''}</div>`;
+  <section class="panel"><h2>4. 授業URLを配る</h2><p>このURLにアイテム・出席者・パターンが入っています。変更したら、新しいURLを全員に配り直してください。</p><textarea id="share-url" readonly aria-label="児童用の授業URL" rows="3"></textarea><div class="share-actions"><button class="primary-button" id="copy-url">URLをコピー</button><a id="open-game" class="small-button" href="${classURL(config)}">この設定でゲームを開く</a></div><p id="copy-status" role="status"></p><p class="note">誰に何が配られるかは、タイトル画面で <strong>99</strong> を入力すると確認できます。一覧の閲覧にパスコードは不要です。</p></section>`;
   updateMetrics();
 }
 
@@ -57,7 +46,6 @@ function updateMetrics() {
     copy.disabled = false;
     error.textContent = '';
     history.replaceState(null, '', `${location.pathname}${location.search}#class=${encodeConfig(config)}`);
-    if (isRoster) root.querySelector('#roster').innerHTML = rosterHTML();
   } catch (issue) {
     error.textContent = issue.message;
     metrics.replaceChildren();
@@ -65,7 +53,6 @@ function updateMetrics() {
     copy.disabled = true;
     link.removeAttribute('href');
     link.setAttribute('aria-disabled', 'true');
-    root.querySelector('#roster').replaceChildren();
   }
   root.querySelector('#copy-status').textContent = '';
 }

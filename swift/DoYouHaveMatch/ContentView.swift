@@ -36,16 +36,19 @@ struct ContentView: View {
         }
         .sheet(isPresented: $teacherPresented) {
             NavigationStack {
-                if needsPasscode {
+                if pendingRoster {
+                    RosterView(config: game.classroom)
+                        .toolbar { ToolbarItem(placement: .navigationBarTrailing) { Button("タイトルへ") { teacherPresented = false } } }
+                } else if needsPasscode {
                     Form {
                         Section("先生用パスコード") {
-                            Text("入力できる回数：あと\(max(0, 5 - teacherAccess.attempts))回")
+                            Text("あと\(max(0, 5 - teacherAccess.failures))回間違えると開けなくなります。")
                             SecureField("パスコード", text: $passcode).keyboardType(.numberPad)
                             Button("開く") {
                                 let allowed = teacherAccess.unlock(passcode)
                                 passcode = ""
                                 if allowed {
-                                    if !hasClassConfiguration && !pendingRoster {
+                                    if !hasClassConfiguration {
                                         game.classroom.pattern = Int.random(in: 0..<8)
                                     }
                                     hasClassConfiguration = true
@@ -58,7 +61,7 @@ struct ContentView: View {
                         }
                     }
                 } else {
-                    TeacherView(config: $game.classroom, showRoster: pendingRoster) {
+                    TeacherView(config: $game.classroom) {
                         teacherAccess.revoke()
                         teacherPresented = false
                     }
@@ -67,7 +70,7 @@ struct ContentView: View {
             }
         }
         .onReceive(Timer.publish(every: 5, on: .main, in: .common).autoconnect()) { _ in
-            if teacherPresented && !needsPasscode && !teacherAccess.hasAccess { teacherPresented = false }
+            if teacherPresented && !pendingRoster && !needsPasscode && !teacherAccess.hasAccess { teacherPresented = false }
         }
         .onOpenURL { url in
             if game.phase == .setup, let config = ClassConfiguration.fromURL(url.absoluteString) { game.classroom = config; hasClassConfiguration = true }
@@ -85,7 +88,7 @@ struct ContentView: View {
                     titleTaps.append(Date())
                     if titleTaps.count >= 3 {
                         titleTaps = []
-                        if teacherAccess.canAttempt { passcode = ""; needsPasscode = true; teacherPresented = true }
+                        if teacherAccess.canAttempt { pendingRoster = false; passcode = ""; needsPasscode = true; teacherPresented = true }
                     }
                 }
             Text("同じ持ち物の友だちを見つけよう").font(.title2).foregroundStyle(Palette.teal)
@@ -98,8 +101,7 @@ struct ContentView: View {
             action("はじめる", primary: true) {
                 if attendanceText == "99" {
                     pendingRoster = true
-                    if teacherAccess.hasAccess { needsPasscode = false; teacherPresented = true }
-                    else { setupError = "先生用です。タイトルから先生用メニューを開いてください。" }
+                    teacherPresented = true
                 } else if let number = Int(attendanceText), game.begin(number) {
                     teacherAccess.revoke(); pendingRoster = false; setupError = ""; titleTaps = []
                 } else { setupError = "出席番号を1〜40で入れてね。進めないときは先生に聞いてね。" }

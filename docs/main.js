@@ -1,20 +1,18 @@
 import { Game, PHASE, formatTime, sentence } from './game.js';
 import { loadConfig, encodeConfig } from './room.js';
-import { canAttempt, attemptCount, unlock, hasAccess, revokeAccess } from './teacher-access.js';
+import { canAttempt, failureCount, unlock, revokeAccess } from './teacher-access.js?v=2';
 
 const game = new Game();
 const root = document.querySelector('#app');
 let noticeTimeout;
 let config;
 let setupError = '';
-let pendingRoster = false;
 let titleTaps = [];
 try { config = loadConfig(); } catch (error) { setupError = error.message; }
 
-function teacherURL(roster = false) {
+function teacherURL() {
   const url = new URL('admin.html', location.href);
-  if (roster) url.searchParams.set('roster', '99');
-  if (!roster && !new URLSearchParams(location.hash.slice(1)).has('class')) url.searchParams.set('new', '1');
+  if (!new URLSearchParams(location.hash.slice(1)).has('class')) url.searchParams.set('new', '1');
   url.hash = `class=${encodeConfig(config)}`;
   return url.href;
 }
@@ -23,7 +21,7 @@ function showTeacherLogin() {
   if (!config || !canAttempt() || document.querySelector('#teacher-login')) return;
   const dialog = document.createElement('dialog');
   dialog.id = 'teacher-login';
-  dialog.innerHTML = `<form id="teacher-form"><h2>先生用パスコード</h2><p>入力できる回数：あと${5 - attemptCount()}回</p><input name="passcode" type="password" inputmode="numeric" pattern="[0-9]{4}" maxlength="4" autocomplete="off" required aria-label="先生用パスコード"><div class="login-actions"><button type="button" id="cancel-login">閉じる</button><button type="submit">開く</button></div></form>`;
+  dialog.innerHTML = `<form id="teacher-form"><h2>先生用パスコード</h2><p>あと${5 - failureCount()}回間違えると開けなくなります。</p><input name="passcode" type="password" inputmode="numeric" pattern="[0-9]{4}" maxlength="4" autocomplete="off" required aria-label="先生用パスコード"><div class="login-actions"><button type="button" id="cancel-login">閉じる</button><button type="submit">開く</button></div></form>`;
   document.body.append(dialog);
   dialog.addEventListener('close', () => dialog.remove());
   dialog.querySelector('#cancel-login').addEventListener('click', () => dialog.close());
@@ -34,8 +32,8 @@ function showTeacherLogin() {
     submit.disabled = true;
     const allowed = await unlock(dialog.querySelector('input').value);
     dialog.close();
-    if (allowed) location.assign(teacherURL(pendingRoster));
-    else { pendingRoster = false; titleTaps = []; }
+    if (allowed) location.assign(teacherURL());
+    else { titleTaps = []; }
   });
   dialog.showModal();
 }
@@ -85,9 +83,9 @@ root.addEventListener('submit', event => {
   const text = document.querySelector('#attendance').value.trim();
   const number = /^\d{1,2}$/.test(text) ? Number(text) : NaN;
   if (number === 99 && config) {
-    pendingRoster = true;
-    if (hasAccess()) location.assign(teacherURL(true));
-    else { setupError = '先生用です。タイトルから先生用メニューを開いてください。'; render(); }
+    const url = new URL('roster.html', location.href);
+    url.hash = `class=${encodeConfig(config)}`;
+    location.assign(url.href);
     return;
   }
   if (!config) return;
@@ -97,7 +95,6 @@ root.addEventListener('submit', event => {
     return;
   }
   revokeAccess();
-  pendingRoster = false;
   setupError = '';
   titleTaps = [];
   render();

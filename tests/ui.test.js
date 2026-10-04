@@ -3,11 +3,11 @@ import assert from 'node:assert/strict';
 import { parseHTML } from 'linkedom';
 import { webcrypto } from 'node:crypto';
 import { defaultConfig, encodeConfig, decodeConfig } from '../docs/room.js';
-import { attemptCount } from '../docs/teacher-access.js';
+import { failureCount } from '../docs/teacher-access.js';
 
 let pageNumber = 0;
 function environment(path = '', authenticated = false) {
-  const { window, document } = parseHTML('<html><body><main id="app"></main><main id="teacher-page"></main></body></html>');
+  const { window, document } = parseHTML('<html><body><main id="app"></main><main id="teacher-page"></main><main id="roster-page"></main></body></html>');
   const storage = () => {
     const values = new Map();
     return { getItem: key => values.get(key) ?? null, setItem: (key, value) => values.set(key, String(value)), removeItem: key => values.delete(key) };
@@ -63,33 +63,42 @@ test('title needs three taps; wrong code closes the menu and five attempts exhau
     document.querySelector('#teacher-login input').value = '0000';
     env.submit('#teacher-form');
     await waitFor(() => !document.querySelector('#teacher-login'));
-    assert.equal(attemptCount(), attempt);
+    assert.equal(failureCount(), attempt);
     tripleTap(env);
   }
   assert.equal(document.querySelector('#teacher-login'), null);
   assert.equal(env.navigation, null);
 });
 
-test('99 requires authentication and successful login carries its roster request', async () => {
-  const env = environment();
+test('99 opens the current read-only roster immediately, even after a teacher lockout', async () => {
+  const config = { ...defaultConfig(), pattern: 3, present: [1, 3, 5] };
+  const env = environment(`#class=${encodeConfig(config)}`);
+  localStorage.setItem('dyhm_teacher_failures_v2', '5');
   await env.load('main');
   document.querySelector('#attendance').value = '99';
   env.submit('#attendance-form');
-  assert.equal(env.navigation, null);
-  assert.ok(document.querySelector('#game-title'));
-  assert.equal(document.querySelector('table'), null);
+  const target = new URL(env.navigation);
+  assert.equal(target.pathname, '/DoYouHave-Match/roster.html');
+  assert.deepEqual(decodeConfig(new URLSearchParams(target.hash.slice(1)).get('class')), config);
+  assert.equal(document.querySelector('#teacher-login'), null);
+  assert.equal(failureCount(), 5);
+  assert.equal(sessionStorage.getItem('dyhm_teacher_access_v1'), null);
+});
+
+test('successful teacher login leaves the displayed failure allowance unchanged', async () => {
+  const env = environment();
+  localStorage.setItem('dyhm_teacher_failures_v2', '2');
+  await env.load('main');
   tripleTap(env);
+  assert.match(document.querySelector('#teacher-login p').textContent, /あと3回/);
   document.querySelector('#teacher-login input').value = '2891';
   env.submit('#teacher-form');
   await waitFor(() => env.navigation !== null);
-  const target = new URL(env.navigation);
-  assert.equal(target.searchParams.get('roster'), '99');
-  assert.equal(target.searchParams.has('new'), false);
-  assert.equal(decodeConfig(new URLSearchParams(target.hash.slice(1)).get('class')).pattern, 0);
-  assert.ok(target.hash.startsWith('#class='));
+  assert.equal(new URL(env.navigation).pathname, '/DoYouHave-Match/admin.html');
+  assert.equal(failureCount(), 2);
 });
 
-test('direct admin and roster URLs show no content without authorization', async () => {
+test('direct settings URLs remain protected without authorization', async () => {
   const env = environment('admin.html?roster=99');
   await env.load('admin');
   assert.equal(document.querySelector('#teacher-page').innerHTML, '');
@@ -116,10 +125,13 @@ test('ordinary teacher menu hides the roster and recalculates settings into the 
   assert.equal(document.querySelector('#share-url').value, '');
 });
 
-test('authorized 99 table lists all forty numbers with absences and four exact positions', async () => {
+test('99 table is read-only and lists forty numbers without authorization', async () => {
   const config = { ...defaultConfig(), present: [1, 3, 7, 8, 12] };
-  const env = environment(`admin.html?roster=99#class=${encodeConfig(config)}`, true);
-  await env.load('admin');
+  const env = environment(`roster.html#class=${encodeConfig(config)}`);
+  await env.load('roster');
+  assert.equal(document.querySelectorAll('input, select, button').length, 0);
+  assert.equal(sessionStorage.getItem('dyhm_teacher_access_v1'), null);
+  assert.equal(failureCount(), 0);
   assert.equal(document.querySelectorAll('tbody tr').length, 40);
   assert.equal(document.querySelectorAll('tbody .absent-row').length, 35);
   assert.equal(document.querySelector('tbody tr').querySelectorAll('td').length, 5);

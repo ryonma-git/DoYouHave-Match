@@ -1,7 +1,7 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
 import { webcrypto } from 'node:crypto';
-import { unlock, attemptCount, hasAccess, canAttempt, revokeAccess } from '../docs/teacher-access.js';
+import { unlock, failureCount, hasAccess, canAttempt, revokeAccess } from '../docs/teacher-access.js';
 
 function setup() {
   const makeStorage = () => {
@@ -15,32 +15,46 @@ function setup() {
   if (!globalThis.crypto) globalThis.crypto = webcrypto;
 }
 
-test('every attempt is counted and the sixth attempt cannot authenticate', async () => {
+test('successful logins do not consume or reset failures; five wrong codes lock access', async () => {
   setup();
-  assert.equal(await unlock('0000'), false);
-  assert.equal(attemptCount(), 1);
-  assert.equal(await unlock('2891'), true);
-  assert.equal(hasAccess(), true);
+  for (let i = 0; i < 8; i++) {
+    assert.equal(await unlock('2891'), true);
+    assert.equal(failureCount(), 0);
+  }
+  for (let count = 1; count <= 4; count++) {
+    assert.equal(await unlock('0000'), false);
+    assert.equal(hasAccess(), false);
+    assert.equal(failureCount(), count);
+    assert.equal(await unlock('2891'), true);
+    assert.equal(failureCount(), count);
+  }
   assert.equal(await unlock('9999'), false);
-  assert.equal(hasAccess(), false);
-  assert.equal(await unlock('0000'), false);
-  assert.equal(await unlock('2891'), true);
-  assert.equal(attemptCount(), 5);
+  assert.equal(failureCount(), 5);
   assert.equal(canAttempt(), false);
   assert.equal(await unlock('2891'), false);
   assert.equal(hasAccess(), false);
 });
 
-test('reload/tab change does not reset counts; play revokes access', async () => {
+test('failure counts survive reload and one cleared store; play revokes access', async () => {
   setup();
+  await unlock('0000');
   await unlock('2891');
   revokeAccess();
   assert.equal(hasAccess(), false);
   sessionStorage.clear();
-  assert.equal(attemptCount(), 1);
+  assert.equal(failureCount(), 1);
   document.cookie = '';
-  assert.equal(attemptCount(), 1);
-  await unlock('2891');
+  assert.equal(failureCount(), 1);
+  await unlock('0000');
   localStorage.clear();
-  assert.equal(attemptCount(), 2);
+  assert.equal(failureCount(), 2);
+});
+
+test('legacy successful-attempt lockouts do not block the new failure-only counter', async () => {
+  setup();
+  document.cookie = 'dyhm_teacher_attempts_v1=5';
+  localStorage.setItem('dyhm_teacher_attempts_v1', '5');
+  assert.equal(failureCount(), 0);
+  assert.equal(await unlock('2891'), true);
+  assert.equal(failureCount(), 0);
 });

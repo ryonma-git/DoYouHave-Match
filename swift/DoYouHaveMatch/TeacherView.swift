@@ -2,7 +2,6 @@ import SwiftUI
 
 struct TeacherView: View {
     @Binding var config: ClassConfiguration
-    let showRoster: Bool
     let closeAndLock: () -> Void
     @State private var importURL = ""
     @State private var importError = ""
@@ -68,24 +67,7 @@ struct TeacherView: View {
                 }
                 Text(importError)
             }
-            if showRoster && config.isValid {
-                Section("配布一覧（出席番号99）") {
-                    let deals = config.assignments()
-                    let partners = config.partners()
-                    Text("カードは左上・右上・左下・右下の順です。")
-                    ForEach(1...40, id: \.self) { number in
-                        VStack(alignment: .leading, spacing: 6) {
-                            Text("\(number)番").bold()
-                            if let items = deals[number] {
-                                Text(items.map(\.displayName).joined(separator: " / "))
-                                Text("候補：\((partners[number] ?? []).map(String.init).joined(separator: ", "))").font(.caption).foregroundStyle(.secondary)
-                            } else { Text("欠席・対象外").foregroundStyle(.secondary) }
-                        }
-                    }
-                }
-            } else {
-                Section { Text("配布一覧はタイトル画面で出席番号99を入力すると確認できます。") }
-            }
+            Section { Text("配布一覧はタイトル画面で出席番号99を入力すると、パスコードなしで確認できます。") }
             Section { Button("閉じてロック", action: closeAndLock) }
         }
         .navigationTitle("先生用メニュー")
