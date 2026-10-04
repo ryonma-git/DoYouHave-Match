@@ -1,7 +1,7 @@
 import { ITEMS } from './items.js';
 
 export const PATTERN_SEEDS = [1729, 4093, 7919, 12347, 24593, 49157, 65537, 99991];
-export const defaultConfig = () => ({ version: 1, selected: ITEMS.slice(0, 5).map(item => item.id), present: Array.from({ length: 40 }, (_, i) => i + 1), pattern: 0 });
+export const defaultConfig = () => ({ version: 1, selected: ITEMS.map(item => item.id), present: Array.from({ length: 40 }, (_, i) => i + 1), pattern: 0 });
 
 export function validateConfig(input) {
   if (!input || input.version !== 1 || !Array.isArray(input.selected) || !Array.isArray(input.present)) throw new Error('授業設定を読み込めません。先生のURLを開き直してください。');

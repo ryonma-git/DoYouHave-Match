@@ -1,5 +1,5 @@
 import { Game, PHASE, formatTime, sentence } from './game.js';
-import { loadConfig, encodeConfig } from './room.js';
+import { loadConfig, encodeConfig } from './room.js?v=2';
 import { canAttempt, failureCount, unlock, revokeAccess } from './teacher-access.js?v=2';
 
 const game = new Game();

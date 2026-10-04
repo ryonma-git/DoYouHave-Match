@@ -40,7 +40,7 @@ struct SeededGenerator {
 
 struct ClassConfiguration: Codable, Equatable {
     var version = 1
-    var selected = Array(Item.pool.prefix(5)).map(\.id)
+    var selected = Item.pool.map(\.id)
     var present = Array(1...40)
     var pattern = 0
     static let seeds: [UInt32] = [1729, 4093, 7919, 12347, 24593, 49157, 65537, 99991]

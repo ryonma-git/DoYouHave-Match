@@ -63,3 +63,20 @@ test('invalid and tampered classroom configurations fail explicitly', () => {
   assert.throws(() => decodeConfig('invalid'));
   assert.throws(() => decodeConfig('a'.repeat(2001)));
 });
+
+
+test('default classroom encourages several conversations while preserving backup partners', () => {
+  assert.equal(defaultConfig().selected.length, 10);
+  for (let pattern = 0; pattern < 8; pattern++) {
+    const config = { ...defaultConfig(), pattern };
+    const stats = statistics(config);
+    assert.ok(stats.rate <= 0.25, `Pattern ${pattern + 1} is too easy: ${stats.rate}`);
+    assert.ok(stats.minPartners >= 4);
+    const expectedContacts = [...stats.partners.values()].reduce((sum, partners) => sum + config.present.length / (partners.length + 1), 0) / config.present.length;
+    assert.ok(expectedContacts >= 4 && expectedContacts <= 6);
+  }
+  // Previously shared five-item URLs keep their explicit selection.
+  const oldConfig = { ...defaultConfig(), selected: ITEMS.slice(0, 5).map(item => item.id) };
+  assert.equal(decodeConfig(encodeConfig(oldConfig)).selected.length, 5);
+  assert.equal(statistics(oldConfig).rate, 1);
+});

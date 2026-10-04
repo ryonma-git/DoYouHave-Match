@@ -106,7 +106,8 @@ test('direct settings URLs remain protected without authorization', async () => 
 });
 
 test('ordinary teacher menu hides the roster and recalculates settings into the shared URL', async () => {
-  const env = environment('admin.html', true);
+  const fiveItems = { ...defaultConfig(), selected: defaultConfig().selected.slice(0, 5) };
+  const env = environment(`admin.html#class=${encodeConfig(fiveItems)}`, true);
   await env.load('admin');
   assert.equal(document.querySelectorAll('[name=item]').length, 10);
   assert.equal(document.querySelectorAll('[name=present]').length, 40);
@@ -119,6 +120,12 @@ test('ordinary teacher menu hides the roster and recalculates settings into the 
   assert.equal(config.selected.length, 6);
   assert.equal(config.present.includes(2), false);
   assert.match(document.querySelector('#metrics').textContent, /最少/);
+  env.click('#use-all-items');
+  const updatedURL = new URL(document.querySelector('#share-url').value);
+  const updated = decodeConfig(new URLSearchParams(updatedURL.hash.slice(1)).get('class'));
+  assert.equal(updated.selected.length, 10);
+  assert.equal(updated.present.includes(2), false);
+  assert.equal(updated.pattern, config.pattern);
   for (const box of document.querySelectorAll('[name=item]')) box.checked = false;
   env.change('[name=item]');
   assert.ok(document.querySelector('#copy-url').disabled);

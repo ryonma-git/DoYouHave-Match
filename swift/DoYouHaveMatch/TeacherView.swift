@@ -8,6 +8,11 @@ struct TeacherView: View {
     var body: some View {
         Form {
             Section("使用するアイテム（4〜10種類）") {
+                Button("10種類すべて使う") { config.selected = Item.pool.map(\.id) }
+                Text("交流には10種類がおすすめです。")
+                if config.selected.count <= 5 {
+                    Text("4〜5種類では、どの相手とも3枚以上そろいます。何人かに聞いて探す活動には、10種類を使ってください。")
+                }
                 ForEach(Item.pool) { item in
                     Toggle("\(item.icon)  \(item.displayName) / \(item.japanese)", isOn: Binding(
                         get: { config.selected.contains(item.id) },
@@ -47,8 +52,10 @@ struct TeacherView: View {
                     let matches = partners.values.reduce(0) { $0 + $1.count } / 2
                     let pairs = count * (count - 1) / 2
                     let minimum = partners.values.map(\.count).min() ?? 0
+                    let expectedContacts = partners.values.reduce(0.0) { $0 + Double(count) / Double($1.count + 1) } / Double(count)
                     Text("完全に無作為な配布の目安：\(config.randomMatchProbability * 100, specifier: "%.1f")%")
-                    Text("今回マッチできる組：\(matches) / \(pairs)組（\(Double(matches) / Double(pairs) * 100, specifier: "%.1f")%）")
+                    Text("最初の相手とマッチする目安：\(matches) / \(pairs)組（\(Double(matches) / Double(pairs) * 100, specifier: "%.1f")%）")
+                    Text("別の相手に順に聞くと、マッチまで平均\(expectedContacts, specifier: "%.1f")人。相手を無作為に選ぶ場合の目安です。")
                     Text("各児童に最少\(minimum)人の候補。配布後に最大\(max(0, minimum - 1))人の追加欠席が出ても、全員に候補が残ります。")
                 } else { Text("アイテムを4〜10種類、出席者を2〜40人選んでください。").foregroundStyle(.red) }
             }
