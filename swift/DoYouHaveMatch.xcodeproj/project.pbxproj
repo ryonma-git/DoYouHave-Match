@@ -7,16 +7,22 @@
 	objects = {
 
 /* Begin PBXBuildFile section */
+		06AB66658825314511E6CEC5 /* Classroom.swift in Sources */ = {isa = PBXBuildFile; fileRef = A6AFC5A163C75B5A2094F44E /* Classroom.swift */; };
+		0C7D9933FBA78F3041AC90B0 /* TeacherAccess.swift in Sources */ = {isa = PBXBuildFile; fileRef = 009E5101A05C288AF42F6771 /* TeacherAccess.swift */; };
 		30710A56AE066E4180B12B71 /* GameModel.swift in Sources */ = {isa = PBXBuildFile; fileRef = D259B38E50AA5235E837C4C8 /* GameModel.swift */; };
+		4B3F49EAA678B938F05F534E /* TeacherView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 77F4B50B3D3024DE1411DD75 /* TeacherView.swift */; };
 		634B89D77B1F1EA4EA67E04A /* DoYouHaveMatchApp.swift in Sources */ = {isa = PBXBuildFile; fileRef = 4887D61432B42F0D3427C206 /* DoYouHaveMatchApp.swift */; };
 		7B3C064D8D2CB8BBC4FF2328 /* Assets.xcassets in Resources */ = {isa = PBXBuildFile; fileRef = C9B12852D6B3B7A672A246B4 /* Assets.xcassets */; };
 		8677A89E62E4BAA8F7A79389 /* ContentView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 8C622DD1ACC9BF9CEDA5483E /* ContentView.swift */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXFileReference section */
+		009E5101A05C288AF42F6771 /* TeacherAccess.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = TeacherAccess.swift; sourceTree = "<group>"; };
 		38EB1909600D7A78DDE827A6 /* DoYouHaveMatch.app */ = {isa = PBXFileReference; includeInIndex = 0; lastKnownFileType = wrapper.application; path = DoYouHaveMatch.app; sourceTree = BUILT_PRODUCTS_DIR; };
 		4887D61432B42F0D3427C206 /* DoYouHaveMatchApp.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = DoYouHaveMatchApp.swift; sourceTree = "<group>"; };
+		77F4B50B3D3024DE1411DD75 /* TeacherView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = TeacherView.swift; sourceTree = "<group>"; };
 		8C622DD1ACC9BF9CEDA5483E /* ContentView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ContentView.swift; sourceTree = "<group>"; };
+		A6AFC5A163C75B5A2094F44E /* Classroom.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Classroom.swift; sourceTree = "<group>"; };
 		C9B12852D6B3B7A672A246B4 /* Assets.xcassets */ = {isa = PBXFileReference; lastKnownFileType = folder.assetcatalog; path = Assets.xcassets; sourceTree = "<group>"; };
 		D259B38E50AA5235E837C4C8 /* GameModel.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = GameModel.swift; sourceTree = "<group>"; };
 /* End PBXFileReference section */
@@ -34,9 +40,12 @@
 			isa = PBXGroup;
 			children = (
 				C9B12852D6B3B7A672A246B4 /* Assets.xcassets */,
+				A6AFC5A163C75B5A2094F44E /* Classroom.swift */,
 				8C622DD1ACC9BF9CEDA5483E /* ContentView.swift */,
 				4887D61432B42F0D3427C206 /* DoYouHaveMatchApp.swift */,
 				D259B38E50AA5235E837C4C8 /* GameModel.swift */,
+				009E5101A05C288AF42F6771 /* TeacherAccess.swift */,
+				77F4B50B3D3024DE1411DD75 /* TeacherView.swift */,
 			);
 			path = DoYouHaveMatch;
 			sourceTree = "<group>";
@@ -119,9 +128,12 @@
 			isa = PBXSourcesBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
+				06AB66658825314511E6CEC5 /* Classroom.swift in Sources */,
 				8677A89E62E4BAA8F7A79389 /* ContentView.swift in Sources */,
 				634B89D77B1F1EA4EA67E04A /* DoYouHaveMatchApp.swift in Sources */,
 				30710A56AE066E4180B12B71 /* GameModel.swift in Sources */,
+				0C7D9933FBA78F3041AC90B0 /* TeacherAccess.swift in Sources */,
+				4B3F49EAA678B938F05F534E /* TeacherView.swift in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};

@@ -1,12 +1,116 @@
-import { ITEMS } from './game.js';
+import { ITEMS } from './items.js';
+import { PATTERN_SEEDS, loadConfig, validateConfig, statistics, assignments, randomMatchProbability, classURL, encodeConfig } from './room.js';
+import { hasAccess, revokeAccess } from './teacher-access.js';
 
-const names = { pencil: 'えんぴつ', pen: 'ペン', ruler: 'ものさし', eraser: '消しゴム', glue: 'のり' };
-document.querySelector('#catalog').innerHTML = ITEMS.map((item, index) => `
-  <article class="item-row">
-    <div class="item-title"><span class="number">${String(index + 1).padStart(2, '0')}</span><div><h2>${item.name}</h2><p>${names[item.id]}</p></div></div>
-    <div class="visuals">
-      <div class="visual current"><span class="label">現在の絵</span><span class="emoji" aria-label="${item.name}の絵文字">${item.icon}</span></div>
-      <div class="visual proposed"><span class="label">差し替え候補</span><img src="art/${item.id}.svg" alt="${names[item.id]}のイラスト" width="112" height="112"></div>
-    </div>
-  </article>
-`).join('');
+const root = document.querySelector('#teacher-page');
+const isRoster = new URLSearchParams(location.search).get('roster') === '99';
+let config;
+
+function guard() {
+  if (hasAccess()) return true;
+  root.replaceChildren();
+  location.replace(new URL('./' + location.hash, location.href).href);
+  return false;
+}
+
+function rosterHTML() {
+  const deals = assignments(config);
+  const stats = statistics(config);
+  return `<section class="panel"><h2>配布一覧・出席番号99</h2><p>カード1〜4は児童の画面の左上・右上・左下・右下の順です。</p><div class="table-wrap"><table><thead><tr><th>番号</th><th>カード1</th><th>カード2</th><th>カード3</th><th>カード4</th><th>3枚以上共通する相手</th></tr></thead><tbody>${Array.from({ length: 40 }, (_, i) => i + 1).map(number => {
+    const cards = deals.get(number);
+    if (!cards) return `<tr class="absent-row"><th>${number}</th><td colspan="5">欠席・対象外</td></tr>`;
+    return `<tr><th>${number}</th>${cards.map(item => `<td>${item.name}</td>`).join('')}<td class="partner-list">${stats.partners.get(number).join(', ')}</td></tr>`;
+  }).join('')}</tbody></table></div></section>`;
+}
+
+function render() {
+  if (!guard()) return;
+  root.innerHTML = `<header class="heading"><a class="back" href="${classURL(config)}">← タイトルへ戻る</a><button class="small-button exit" id="lock">閉じてロック</button><p class="eyebrow">TEACHER MENU</p><h1>授業の準備</h1><p class="intro">使うアイテムと出席者を選び、同じ授業URLを全員に配ってください。</p></header>
+  <section class="panel"><h2>1. 使用するアイテム</h2><p>4〜10種類から選択。児童にはそのうち4種類を配布します。画像は仮表示です。</p><div id="catalog" class="item-options">${ITEMS.map(item => `<label class="item-option"><input type="checkbox" name="item" value="${item.id}" ${config.selected.includes(item.id) ? 'checked' : ''}><span class="item-emoji" aria-hidden="true">${item.icon}</span><span><strong>${item.name}</strong><small>${item.japanese}</small></span></label>`).join('')}</div></section>
+  <section class="panel"><h2>2. 出席者</h2><p>チェックを外した番号は欠席・対象外です。変更すると出席者だけで組み直します。</p><label class="class-size">最後の出席番号 <input type="number" id="last-number" min="2" max="40" value="${Math.max(...config.present)}"><button class="small-button" id="set-size">1〜この番号を出席にする</button></label><div class="attendance-grid">${Array.from({ length: 40 }, (_, i) => i + 1).map(number => `<label><input type="checkbox" name="present" value="${number}" ${config.present.includes(number) ? 'checked' : ''}><span>${number}</span></label>`).join('')}</div></section>
+  <section class="panel"><h2>3. 配布パターン</h2><div class="pattern-control"><select id="pattern" aria-label="配布パターン">${PATTERN_SEEDS.map((_, i) => `<option value="${i}" ${config.pattern === i ? 'selected' : ''}>パターン ${i + 1}</option>`).join('')}</select><button id="random-pattern" class="small-button">ランダムに選び直す</button></div><p>出席番号とパターンが同じなら、同じカード・同じ位置になります。</p><div id="metrics"></div><p class="error" id="config-error" role="status"></p></section>
+  <section class="panel"><h2>4. 授業URLを配る</h2><p>このURLにアイテム・出席者・パターンが入っています。変更したら、新しいURLを全員に配り直してください。</p><textarea id="share-url" readonly aria-label="児童用の授業URL" rows="3"></textarea><div class="share-actions"><button class="primary-button" id="copy-url">URLをコピー</button><a id="open-game" class="small-button" href="${classURL(config)}">この設定でゲームを開く</a></div><p id="copy-status" role="status"></p><p class="note">誰に何が配られるかは、タイトル画面で <strong>99</strong> を入力すると確認できます。先生用認証が必要です。</p></section><div id="roster">${isRoster ? rosterHTML() : ''}</div>`;
+  updateMetrics();
+}
+
+function readDraft() {
+  return { version: 1, selected: [...root.querySelectorAll('[name=item]:checked')].map(input => input.value), present: [...root.querySelectorAll('[name=present]:checked')].map(input => Number(input.value)), pattern: Number(root.querySelector('#pattern').value) };
+}
+
+function updateMetrics() {
+  if (!guard()) return;
+  const draft = readDraft();
+  const error = root.querySelector('#config-error');
+  const metrics = root.querySelector('#metrics');
+  const copy = root.querySelector('#copy-url');
+  const link = root.querySelector('#open-game');
+  try {
+    config = validateConfig(draft);
+    const stats = statistics(config);
+    const percentage = value => `${(value * 100).toFixed(1)}%`;
+    metrics.innerHTML = `<div class="metrics"><div><strong>${config.selected.length}種類 / ${config.present.length}人</strong><span>今回の設定</span></div><div><strong>${percentage(randomMatchProbability(config.selected.length))}</strong><span>完全に無作為に配った場合の目安</span></div><div><strong>${percentage(stats.rate)}</strong><span>今回マッチできる組：${stats.matches} / ${stats.pairCount}組</span></div><div><strong>最少 ${stats.minPartners}人</strong><span>1人あたりのマッチ相手候補</span></div></div><p class="balance-note">現在の出席者は全員に相手がいます。最大${Math.max(0, stats.minPartners - 1)}人の追加欠席でも、各児童に少なくとも1人の候補が残ります（配布を変えない場合）。</p>`;
+    const url = classURL(config);
+    root.querySelector('#share-url').value = url;
+    link.href = url;
+    root.querySelector('.back').href = url;
+    link.removeAttribute('aria-disabled');
+    copy.disabled = false;
+    error.textContent = '';
+    history.replaceState(null, '', `${location.pathname}${location.search}#class=${encodeConfig(config)}`);
+    if (isRoster) root.querySelector('#roster').innerHTML = rosterHTML();
+  } catch (issue) {
+    error.textContent = issue.message;
+    metrics.replaceChildren();
+    root.querySelector('#share-url').value = '';
+    copy.disabled = true;
+    link.removeAttribute('href');
+    link.setAttribute('aria-disabled', 'true');
+    root.querySelector('#roster').replaceChildren();
+  }
+  root.querySelector('#copy-status').textContent = '';
+}
+
+root.addEventListener('change', event => {
+  if (event.target.matches('[name=item], [name=present], #pattern')) updateMetrics();
+});
+root.addEventListener('click', async event => {
+  if (!guard()) return;
+  if (event.target.id === 'random-pattern') {
+    const old = Number(root.querySelector('#pattern').value);
+    const value = crypto.getRandomValues(new Uint32Array(1))[0] % (PATTERN_SEEDS.length - 1);
+    root.querySelector('#pattern').value = String(value >= old ? value + 1 : value);
+    updateMetrics();
+  }
+  if (event.target.id === 'set-size') {
+    const input = root.querySelector('#last-number');
+    if (!input.reportValidity() || !input.value) return;
+    root.querySelectorAll('[name=present]').forEach(box => { box.checked = Number(box.value) <= Number(input.value); });
+    updateMetrics();
+  }
+  if (event.target.id === 'copy-url') {
+    try { await navigator.clipboard.writeText(root.querySelector('#share-url').value); root.querySelector('#copy-status').textContent = 'コピーしました。全員に同じURLを配ってください。'; }
+    catch { root.querySelector('#share-url').select(); root.querySelector('#copy-status').textContent = 'URL欄を選択しました。長押ししてコピーしてください。'; }
+  }
+  if (event.target.id === 'lock') {
+    revokeAccess();
+    location.replace(classURL(config));
+  }
+});
+
+if (guard()) {
+  try {
+    config = loadConfig();
+    const params = new URLSearchParams(location.search);
+    if (params.get('new') === '1') {
+      config.pattern = crypto.getRandomValues(new Uint32Array(1))[0] % PATTERN_SEEDS.length;
+      params.delete('new');
+      history.replaceState(null, '', `${location.pathname}${params.toString() ? '?' + params.toString() : ''}${location.hash}`);
+    }
+    render();
+  }
+  catch { root.textContent = '授業URLが正しくありません。タイトルから開き直してください。'; }
+}
+setInterval(guard, 5000);
+window.addEventListener('pagehide', () => root.replaceChildren());
+window.addEventListener('pageshow', event => { if (event.persisted && guard()) render(); });
+window.addEventListener('visibilitychange', guard);

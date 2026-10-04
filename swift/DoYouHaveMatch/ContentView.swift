@@ -9,6 +9,15 @@ private enum Palette {
 
 struct ContentView: View {
     @StateObject private var game = GameModel()
+    @StateObject private var teacherAccess = TeacherAccess()
+    @State private var attendanceText = ""
+    @State private var setupError = ""
+    @State private var teacherPresented = false
+    @State private var needsPasscode = true
+    @State private var pendingRoster = false
+    @State private var passcode = ""
+    @State private var titleTaps: [Date] = []
+    @State private var hasClassConfiguration = false
 
     var body: some View {
         GeometryReader { geometry in
@@ -25,6 +34,44 @@ struct ContentView: View {
             .background(Palette.background.ignoresSafeArea())
             .foregroundStyle(Palette.ink)
         }
+        .sheet(isPresented: $teacherPresented) {
+            NavigationStack {
+                if needsPasscode {
+                    Form {
+                        Section("先生用パスコード") {
+                            Text("入力できる回数：あと\(max(0, 5 - teacherAccess.attempts))回")
+                            SecureField("パスコード", text: $passcode).keyboardType(.numberPad)
+                            Button("開く") {
+                                let allowed = teacherAccess.unlock(passcode)
+                                passcode = ""
+                                if allowed {
+                                    if !hasClassConfiguration {
+                                        game.classroom.pattern = Int.random(in: 0..<8)
+                                        hasClassConfiguration = true
+                                    }
+                                    needsPasscode = false
+                                }
+                                else { teacherPresented = false; pendingRoster = false }
+                            }
+                            .disabled(passcode.count != 4)
+                            Button("閉じる") { teacherPresented = false }
+                        }
+                    }
+                } else {
+                    TeacherView(config: $game.classroom, showRoster: pendingRoster) {
+                        teacherAccess.revoke()
+                        teacherPresented = false
+                    }
+                    .toolbar { ToolbarItem(placement: .navigationBarTrailing) { Button("タイトルへ") { teacherPresented = false } } }
+                }
+            }
+        }
+        .onReceive(Timer.publish(every: 5, on: .main, in: .common).autoconnect()) { _ in
+            if teacherPresented && !needsPasscode && !teacherAccess.hasAccess { teacherPresented = false }
+        }
+        .onOpenURL { url in
+            if game.phase == .setup, let config = ClassConfiguration.fromURL(url.absoluteString) { game.classroom = config; hasClassConfiguration = true }
+        }
     }
 
     private var welcome: some View {
@@ -33,8 +80,32 @@ struct ContentView: View {
             Text("✏️  ?  📏").font(.system(size: 70))
             eyebrow("LET'S TALK!")
             Text("Do You Have?").font(.system(size: 58, weight: .heavy, design: .rounded)).minimumScaleFactor(0.7).lineLimit(1)
+                .onTapGesture {
+                    titleTaps = titleTaps.filter { Date().timeIntervalSince($0) < 1.8 }
+                    titleTaps.append(Date())
+                    if titleTaps.count >= 3 {
+                        titleTaps = []
+                        if teacherAccess.canAttempt { passcode = ""; needsPasscode = true; teacherPresented = true }
+                    }
+                }
             Text("Ask. Remember. Match.").font(.title2).foregroundStyle(Palette.teal)
-            action("LET’S PLAY", primary: true, action: game.begin).padding(.top, 24)
+            Text("出席番号").font(.headline)
+            TextField("1–40", text: $attendanceText)
+                .keyboardType(.numberPad).multilineTextAlignment(.center)
+                .font(.largeTitle.bold()).padding(10).frame(width: 170)
+                .background(.white, in: RoundedRectangle(cornerRadius: 14))
+                .onChange(of: attendanceText) { value in attendanceText = String(value.filter(\.isNumber).prefix(2)) }
+            action("LET’S PLAY", primary: true) {
+                if attendanceText == "99" {
+                    pendingRoster = true
+                    if teacherAccess.hasAccess { needsPasscode = false; teacherPresented = true }
+                    else { setupError = "先生用です。タイトルから先生用メニューを開いてください。" }
+                } else if let number = Int(attendanceText), game.begin(number) {
+                    teacherAccess.revoke(); pendingRoster = false; setupError = ""; titleTaps = []
+                } else { setupError = "出席番号（1〜40）と出席設定を確認してください。" }
+            }
+            Text(setupError).font(.footnote).foregroundStyle(.orange)
+            Text("配布 \(game.classroom.pattern + 1) · \(game.classroom.selected.count)種類 · \(game.classroom.present.count)人").font(.caption).foregroundStyle(.secondary)
             Spacer()
         }
     }

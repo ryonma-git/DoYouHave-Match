@@ -1,32 +1,10 @@
 import Foundation
 import Combine
 
-struct Item: Identifiable, Equatable {
-    let id: String
-    let displayName: String
-    let icon: String
-    let phraseForSentence: String
-
-    static let pool: [Item] = [
-        .init(id: "pencil", displayName: "pencil", icon: "✏️", phraseForSentence: "a pencil"),
-        .init(id: "pen", displayName: "pen", icon: "🖊️", phraseForSentence: "a pen"),
-        .init(id: "ruler", displayName: "ruler", icon: "📏", phraseForSentence: "a ruler"),
-        .init(id: "eraser", displayName: "eraser", icon: "🧽", phraseForSentence: "an eraser"),
-        .init(id: "glue", displayName: "glue", icon: "🧴", phraseForSentence: "glue")
-    ]
-}
-
 enum Phase { case setup, memorize, ready, playing, result }
 
 /// An item source can later be replaced by items earned in Color Hunt.
 protocol ItemProviding { func makeItems() -> [Item] }
-
-struct ClassroomItemProvider: ItemProviding {
-    func makeItems() -> [Item] {
-        // Any two four-item subsets of this five-item pool share at least three items.
-        Array(Item.pool.shuffled().prefix(4))
-    }
-}
 
 final class GameModel: ObservableObject {
     @Published private(set) var phase: Phase = .setup
@@ -35,13 +13,15 @@ final class GameModel: ObservableObject {
     @Published private(set) var displayedSeconds = 0
     @Published private(set) var showPenalty = false
 
-    private let itemProvider: ItemProviding
+    @Published var classroom = ClassConfiguration()
+    @Published private(set) var attendance = 0
+    private let itemProvider: ItemProviding?
     private var startedAt: Date?
     private var penaltySeconds = 0
     private var timer: Timer?
     private var penaltyTask: DispatchWorkItem?
 
-    init(itemProvider: ItemProviding = ClassroomItemProvider()) {
+    init(itemProvider: ItemProviding? = nil) {
         self.itemProvider = itemProvider
     }
 
@@ -59,12 +39,16 @@ final class GameModel: ObservableObject {
         }
     }
 
-    func begin() {
-        guard phase == .setup else { return }
-        items = itemProvider.makeItems()
-        guard items.count == 4, Set(items.map(\.id)).count == 4 else { return }
+    @discardableResult
+    func begin(_ number: Int) -> Bool {
+        guard phase == .setup, (1...40).contains(number), classroom.present.contains(number), classroom.isValid else { return false }
+        let cards = itemProvider?.makeItems() ?? classroom.assignments()[number] ?? []
+        guard cards.count == 4, Set(cards.map(\.id)).count == 4 else { return false }
+        attendance = number
+        items = cards
         faceUp = [true, true, true, true]
         phase = .memorize
+        return true
     }
 
     func ready() {
@@ -119,6 +103,7 @@ final class GameModel: ObservableObject {
         timer = nil
         penaltyTask?.cancel()
         phase = .setup
+        attendance = 0
         items = []
         faceUp = [false, false, false, false]
         displayedSeconds = 0

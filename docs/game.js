@@ -1,22 +1,8 @@
-export const ITEMS = Object.freeze([
-  { id: 'pencil', name: 'pencil', icon: '✏️', phrase: 'a pencil' },
-  { id: 'pen', name: 'pen', icon: '🖊️', phrase: 'a pen' },
-  { id: 'ruler', name: 'ruler', icon: '📏', phrase: 'a ruler' },
-  { id: 'eraser', name: 'eraser', icon: '🧽', phrase: 'an eraser' },
-  { id: 'glue', name: 'glue', icon: '🧴', phrase: 'glue' },
-]);
+import { ITEMS } from './items.js';
+import { assignments, defaultConfig } from './room.js';
+export { ITEMS };
 
 export const PHASE = Object.freeze({ SETUP: 'setup', MEMORIZE: 'memorize', READY: 'ready', PLAYING: 'playing', RESULT: 'result' });
-
-export function createItems(random = Math.random) {
-  const omit = Math.floor(random() * ITEMS.length);
-  const picked = ITEMS.filter((_, index) => index !== omit);
-  for (let i = picked.length - 1; i > 0; i--) {
-    const j = Math.floor(random() * (i + 1));
-    [picked[i], picked[j]] = [picked[j], picked[i]];
-  }
-  return picked;
-}
 
 export function sentence(items) {
   const phrases = items.map(item => item.phrase);
@@ -32,14 +18,14 @@ export function formatTime(seconds) {
 }
 
 export class Game {
-  constructor({ random = Math.random, now = () => Date.now() } = {}) {
-    this.random = random;
+  constructor({ now = () => Date.now() } = {}) {
     this.now = now;
     this.reset();
   }
 
   reset() {
     this.phase = PHASE.SETUP;
+    this.attendance = 0;
     this.items = [];
     this.faceUp = [false, false, false, false];
     this.startedAt = null;
@@ -48,11 +34,15 @@ export class Game {
     this.penaltyNotice = false;
   }
 
-  begin() {
-    if (this.phase !== PHASE.SETUP) return;
-    this.items = createItems(this.random);
+  begin(number, config = defaultConfig()) {
+    if (this.phase !== PHASE.SETUP || !Number.isInteger(number) || number < 1 || number > 40) return false;
+    const cards = assignments(config).get(number);
+    if (!cards) return false;
+    this.attendance = number;
+    this.items = cards;
     this.faceUp = [true, true, true, true];
     this.phase = PHASE.MEMORIZE;
+    return true;
   }
 
   ready() {

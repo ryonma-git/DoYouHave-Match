@@ -45,3 +45,18 @@ footer { width: min(100%, 720px); display: flex; justify-content: center; gap: 1
 .result-time strong { display: block; font-size: 2.8rem; letter-spacing: 0; color: #173b3b; }
 @media (max-height: 680px) and (min-width: 700px) { .shell { gap: 10px; padding-top: 14px; padding-bottom: 14px; } .cards { min-height: 220px; } .card-icon { font-size: 2.7rem; } .action { min-height: 56px; padding: 12px; } }
 @media (max-width: 600px) { .shell { padding-left: 16px; padding-right: 16px; gap: 16px; } .cards { min-height: 320px; } .card { border-radius: 17px; } .dual { gap: 10px; } .dual .action { padding: 10px 5px; font-size: .98rem; } .time-badge { flex-direction: column; align-items: flex-start; gap: 0; } }
+#game-title { font: inherit; letter-spacing: inherit; border: 0; padding: 0; color: inherit; background: transparent; user-select: none; }
+#attendance-form { display: flex; flex-direction: column; align-items: center; gap: 14px; }
+#attendance-form label { color: #4c827b; font-size: 1.1rem; font-weight: 800; }
+#attendance { width: 170px; border: 2px solid #83b9ad; border-radius: 15px; background: #fffefa; padding: 10px; text-align: center; font: inherit; font-size: 2rem; font-weight: 800; color: #173b3b; }
+.setup-error { max-width: 440px; color: #a04824; min-height: 1.4em; font-size: .95rem; margin: 14px 0 0; }
+.class-summary { color: #6b817c; font-size: .85rem; margin: 8px 0; }
+.welcome .subtitle { margin-bottom: 22px; }
+.welcome .brand-mark { margin-bottom: 14px; }
+#teacher-login { max-width: min(440px, calc(100% - 30px)); border: 0; border-radius: 22px; padding: 28px; color: #173b3b; background: #fffefa; }
+#teacher-login::backdrop { background: #173b3b88; }
+#teacher-login h2 { margin-top: 0; }
+#teacher-login input { width: 100%; font: inherit; font-size: 2rem; padding: 10px; text-align: center; border: 2px solid #83b9ad; border-radius: 12px; }
+.login-actions { display: flex; gap: 12px; margin-top: 20px; }
+.login-actions button { flex: 1; border: 0; border-radius: 12px; padding: 14px; background: #e5eee8; color: #173b3b; font-weight: 800; }
+.login-actions button[type=submit] { background: #317a72; color: white; }
