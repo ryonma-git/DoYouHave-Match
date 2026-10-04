@@ -84,6 +84,8 @@ test('99 requires authentication and successful login carries its roster request
   await waitFor(() => env.navigation !== null);
   const target = new URL(env.navigation);
   assert.equal(target.searchParams.get('roster'), '99');
+  assert.equal(target.searchParams.has('new'), false);
+  assert.equal(decodeConfig(new URLSearchParams(target.hash.slice(1)).get('class')).pattern, 0);
   assert.ok(target.hash.startsWith('#class='));
 });
 

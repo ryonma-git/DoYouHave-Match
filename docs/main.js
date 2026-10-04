@@ -14,7 +14,7 @@ try { config = loadConfig(); } catch (error) { setupError = error.message; }
 function teacherURL(roster = false) {
   const url = new URL('admin.html', location.href);
   if (roster) url.searchParams.set('roster', '99');
-  if (!new URLSearchParams(location.hash.slice(1)).has('class')) url.searchParams.set('new', '1');
+  if (!roster && !new URLSearchParams(location.hash.slice(1)).has('class')) url.searchParams.set('new', '1');
   url.hash = `class=${encodeConfig(config)}`;
   return url.href;
 }

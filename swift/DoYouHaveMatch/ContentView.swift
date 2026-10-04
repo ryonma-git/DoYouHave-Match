@@ -45,10 +45,10 @@ struct ContentView: View {
                                 let allowed = teacherAccess.unlock(passcode)
                                 passcode = ""
                                 if allowed {
-                                    if !hasClassConfiguration {
+                                    if !hasClassConfiguration && !pendingRoster {
                                         game.classroom.pattern = Int.random(in: 0..<8)
-                                        hasClassConfiguration = true
                                     }
+                                    hasClassConfiguration = true
                                     needsPasscode = false
                                 }
                                 else { teacherPresented = false; pendingRoster = false }
