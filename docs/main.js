@@ -1,5 +1,5 @@
-import { Game, PHASE, formatTime, sentence } from './game.js';
-import { loadConfig, encodeConfig } from './room.js?v=2';
+import { Game, PHASE, formatTime, sentence, ITEMS } from './game.js?v=2';
+import { loadConfig, encodeConfig } from './room.js?v=3';
 import { canAttempt, failureCount, unlock, revokeAccess } from './teacher-access.js?v=2';
 
 const game = new Game();
@@ -9,6 +9,14 @@ let config;
 let setupError = '';
 let titleTaps = [];
 try { config = loadConfig(); } catch (error) { setupError = error.message; }
+// Warm the small, local artwork files for card reveals and subsequent rounds.
+for (const item of ITEMS.filter(item => item.image && config?.selected.includes(item.id))) {
+  const preload = document.createElement('link');
+  preload.rel = 'preload';
+  preload.as = 'image';
+  preload.href = item.image;
+  document.head.append(preload);
+}
 
 function teacherURL() {
   const url = new URL('admin.html', location.href);
@@ -45,7 +53,7 @@ function cards() {
     const interactive = game.phase === PHASE.PLAYING;
     return `<button class="card ${open ? 'face-up' : 'face-down'}" data-flip="${index}" ${interactive ? '' : 'disabled'} aria-label="カード${index + 1}、${open ? item.name : 'うら向き'}">
       <span class="card-index">${index + 1}</span>
-      <span class="card-content">${open ? `<span class="card-icon" aria-hidden="true">${item.icon}</span><span class="card-name" lang="en">${item.name}</span>` : '<span class="question">?</span>'}</span>
+      <span class="card-content">${open ? `${item.image ? `<img class="card-picture" src="${item.image}" width="800" height="450" alt="" decoding="async">` : `<span class="card-icon" aria-hidden="true">${item.icon}</span>`}<span class="card-name" lang="en">${item.name}</span>` : '<span class="question">?</span>'}</span>
     </button>`;
   }).join('')}</div>`;
 }
@@ -58,7 +66,7 @@ function render() {
   let content;
   switch (game.phase) {
     case PHASE.SETUP:
-      content = `<section class="welcome"><div class="brand-mark">✏️ <span>?</span> 📏</div><p class="eyebrow">友だちと話そう！</p><h1><button id="game-title" type="button" lang="en">Do You Have?</button></h1><p class="subtitle">同じ持ち物の友だちを見つけよう</p><form id="attendance-form"><label for="attendance">出席番号を入れてね（1〜40）</label><input id="attendance" name="attendance" type="text" inputmode="numeric" pattern="[0-9]{1,2}" maxlength="2" autocomplete="off" required placeholder="1–40" aria-describedby="setup-error"><button class="action primary" type="submit" ${config ? '' : 'disabled'}>はじめる</button></form><p id="setup-error" class="setup-error" role="status">${setupError}</p>${config ? `<p class="class-summary">配布 ${config.pattern + 1} · ${config.selected.length}種類 · ${config.present.length}人</p>` : ''}</section>`;
+      content = `<section class="welcome"><div class="brand-mark" aria-hidden="true"><img src="images/pencil.jpg" alt=""><span>?</span><img src="images/ruler.jpg" alt=""></div><p class="eyebrow">友だちと話そう！</p><h1><button id="game-title" type="button" lang="en">Do You Have?</button></h1><p class="subtitle">同じ持ち物の友だちを見つけよう</p><form id="attendance-form"><label for="attendance">出席番号を入れてね（1〜40）</label><input id="attendance" name="attendance" type="text" inputmode="numeric" pattern="[0-9]{1,2}" maxlength="2" autocomplete="off" required placeholder="1–40" aria-describedby="setup-error"><button class="action primary" type="submit" ${config ? '' : 'disabled'}>はじめる</button></form><p id="setup-error" class="setup-error" role="status">${setupError}</p>${config ? `<p class="class-summary">配布 ${config.pattern + 1} · ${config.selected.length}種類 · ${config.present.length}人</p>` : ''}</section>`;
       break;
     case PHASE.MEMORIZE:
       content = `<header><p class="eyebrow">カードと場所をおぼえよう</p><h1>自分の持ち物</h1></header>${cards()}<footer>${button('おぼえた！', 'ready', 'primary')}</footer>`;
@@ -70,7 +78,7 @@ function render() {
       content = `<header class="play-header"><div class="time-badge"><span>タイム</span><strong id="timer">${formatTime(game.elapsedSeconds)}</strong></div><div class="match-count"><strong>${game.matchCount} / 3</strong><span>3枚そろえよう</span></div></header>${cards()}<div class="penalty ${game.penaltyNotice ? 'visible' : ''}" role="status">+5秒</div><footer class="dual">${button('次の友だちへ', 'next', 'secondary')}${button('そろった！', 'match', `primary ${game.matchCount < 3 ? 'inactive' : ''}`)}</footer>`;
       break;
     case PHASE.RESULT:
-      content = `<section class="result"><div class="celebration" aria-hidden="true">✦ ✧ ✦</div><h1>そろった！</h1><p class="eyebrow">2人が持っているもの</p><div class="result-items">${game.matchedItems.map(item => `<div class="result-item"><span aria-hidden="true">${item.icon}</span><strong lang="en">${item.name}</strong></div>`).join('')}</div><p class="sentence-hint">英語で言ってみよう</p><p class="sentence" lang="en">${sentence(game.matchedItems)}</p><div class="result-time">タイム <strong>${formatTime(game.elapsedSeconds)}</strong></div>${button('もう一度あそぶ', 'reset', 'primary')}</section>`;
+      content = `<section class="result"><div class="celebration" aria-hidden="true">✦ ✧ ✦</div><h1>そろった！</h1><p class="eyebrow">2人が持っているもの</p><div class="result-items">${game.matchedItems.map(item => `<div class="result-item">${item.image ? `<img class="result-picture" src="${item.image}" width="800" height="450" alt="">` : `<span aria-hidden="true">${item.icon}</span>`}<strong lang="en">${item.name}</strong></div>`).join('')}</div><p class="sentence-hint">英語で言ってみよう</p><p class="sentence" lang="en">${sentence(game.matchedItems)}</p><div class="result-time">タイム <strong>${formatTime(game.elapsedSeconds)}</strong></div>${button('もう一度あそぶ', 'reset', 'primary')}</section>`;
   }
   root.innerHTML = `<div class="shell ${game.phase}">${content}</div>`;
   const matchButton = root.querySelector('[data-action="match"]');

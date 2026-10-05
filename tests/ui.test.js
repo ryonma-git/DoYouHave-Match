@@ -2,7 +2,7 @@ import test from 'node:test';
 import assert from 'node:assert/strict';
 import { parseHTML } from 'linkedom';
 import { webcrypto } from 'node:crypto';
-import { defaultConfig, encodeConfig, decodeConfig } from '../docs/room.js';
+import { defaultConfig, encodeConfig, decodeConfig, assignments } from '../docs/room.js';
 import { failureCount } from '../docs/teacher-access.js';
 
 let pageNumber = 0;
@@ -110,6 +110,9 @@ test('ordinary teacher menu hides the roster and recalculates settings into the 
   const env = environment(`admin.html#class=${encodeConfig(fiveItems)}`, true);
   await env.load('admin');
   assert.equal(document.querySelectorAll('[name=item]').length, 10);
+  assert.equal(document.querySelectorAll('#catalog img.item-picture').length, 9);
+  assert.equal(document.querySelector('[name=item][value=eraser]').parentElement.querySelector('img').getAttribute('src'), 'images/eraser.jpg');
+  assert.ok(document.querySelector('[name=item][value=crayon]').parentElement.querySelector('.item-emoji'));
   assert.equal(document.querySelectorAll('[name=present]').length, 40);
   assert.equal(document.querySelector('table'), null);
   document.querySelector('[name=item][value=scissors]').checked = true;
@@ -154,13 +157,20 @@ test('a pupil receives the configured deal and an absent number cannot start', a
   document.querySelector('#attendance').value = '3';
   env.submit('#attendance-form');
   assert.equal(document.querySelectorAll('.card.face-up').length, 4);
+  const deal = assignments(config).get(3);
+  for (const [index, card] of [...document.querySelectorAll('.card')].entries()) {
+    assert.equal(card.querySelector('.card-name').textContent, deal[index].name);
+    assert.equal(card.querySelector('img')?.getAttribute('src') ?? null, deal[index].image);
+  }
   assert.equal(sessionStorage.getItem('dyhm_teacher_access_v1'), null);
   env.click('[data-action=ready]');
   assert.equal(document.querySelectorAll('.card.face-down').length, 4);
+  assert.equal(document.querySelectorAll('.cards img, .cards .card-name').length, 0);
   env.click('[data-action=start]');
   assert.equal(document.querySelector('[data-action=match]').disabled, true);
   env.click('[data-flip="0"]'); env.click('[data-flip="1"]'); env.click('[data-flip="2"]');
   assert.equal(document.querySelector('[data-action=match]').disabled, false);
   env.click('[data-action=match]');
   assert.equal(document.querySelectorAll('.result-item').length, 3);
+  assert.deepEqual([...document.querySelectorAll('.result-picture')].map(img => img.getAttribute('src')), deal.slice(0, 3).filter(item => item.image).map(item => item.image));
 });

@@ -14,15 +14,20 @@ struct TeacherView: View {
                     Text("4〜5種類では、どの相手とも3枚以上そろいます。何人かに聞いて探す活動には、10種類を使ってください。")
                 }
                 ForEach(Item.pool) { item in
-                    Toggle("\(item.icon)  \(item.displayName) / \(item.japanese)", isOn: Binding(
+                    Toggle(isOn: Binding(
                         get: { config.selected.contains(item.id) },
                         set: { checked in
                             if checked { config.selected.append(item.id) }
                             else { config.selected.removeAll { $0 == item.id } }
                         }
-                    ))
+                    )) {
+                        HStack(spacing: 12) {
+                            ItemArtwork(item: item).frame(width: 104, height: 59)
+                            Text("\(item.displayName) / \(item.japanese)")
+                        }
+                    }
                 }
-                Text("画像は仮表示です。児童には選択した中から4種類を配ります。")
+                Text("提供いただいた画像を使っています。クレヨンのみ絵文字です。児童には選択した中から4種類を配ります。")
             }
             Section("出席者（2〜40人）") {
                 Text("欠席・対象外の番号を外してください。変更すると配布を組み直します。")

@@ -66,3 +66,6 @@ thead th { background: #edf7f3; white-space: nowrap; }
 @media(max-width:650px) { .panel { padding: 16px; } .item-options { grid-template-columns: 1fr; } .attendance-grid { grid-template-columns: repeat(5,1fr); } .metrics { grid-template-columns: 1fr; } .exit { float: none; margin-left: 12px; } }
 
 #use-all-items { margin-bottom: 14px; }
+
+.item-picture { display: block; width: 104px; height: 59px; flex-shrink: 0; object-fit: contain; border-radius: 8px; }
+.item-emoji { width: 104px; text-align: center; flex-shrink: 0; }

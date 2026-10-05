@@ -61,3 +61,11 @@ footer { width: min(100%, 720px); display: flex; justify-content: center; gap: 1
 .login-actions { display: flex; gap: 12px; margin-top: 20px; }
 .login-actions button { flex: 1; border: 0; border-radius: 12px; padding: 14px; background: #e5eee8; color: #173b3b; font-weight: 800; }
 .login-actions button[type=submit] { background: #317a72; color: white; }
+
+.brand-mark { display: flex; align-items: center; justify-content: center; gap: 14px; }
+.brand-mark img { width: clamp(80px, 14vw, 130px); aspect-ratio: 16 / 9; object-fit: contain; border-radius: 12px; }
+.card-content { width: 100%; height: 100%; padding: 12px 20px; justify-content: center; }
+.card-picture { display: block; flex: 1 1 0; width: 100%; height: 0; min-height: 0; object-fit: contain; border-radius: 10px; }
+.card-name { flex-shrink: 0; }
+.result-picture { width: 120px; height: 70px; object-fit: contain; border-radius: 8px; }
+@media (max-width: 600px) { .card-content { padding: 10px 12px; } }

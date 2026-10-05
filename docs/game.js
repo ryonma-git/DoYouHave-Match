@@ -1,5 +1,5 @@
-import { ITEMS } from './items.js';
-import { assignments, defaultConfig } from './room.js?v=2';
+import { ITEMS } from './items.js?v=2';
+import { assignments, defaultConfig } from './room.js?v=3';
 export { ITEMS };
 
 export const PHASE = Object.freeze({ SETUP: 'setup', MEMORIZE: 'memorize', READY: 'ready', PLAYING: 'playing', RESULT: 'result' });

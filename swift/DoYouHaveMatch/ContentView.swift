@@ -80,7 +80,11 @@ struct ContentView: View {
     private var welcome: some View {
         VStack(spacing: 18) {
             Spacer()
-            Text("✏️  ?  📏").font(.system(size: 70))
+            HStack(spacing: 14) {
+                Image("item-pencil").resizable().scaledToFit().frame(width: 110, height: 62)
+                Text("?").font(.system(size: 60, weight: .heavy)).foregroundStyle(Palette.orange)
+                Image("item-ruler").resizable().scaledToFit().frame(width: 110, height: 62)
+            }.accessibilityHidden(true)
             eyebrow("友だちと話そう！")
             Text("Do You Have?").font(.system(size: 58, weight: .heavy, design: .rounded)).minimumScaleFactor(0.7).lineLimit(1)
                 .onTapGesture {
@@ -166,18 +170,20 @@ struct ContentView: View {
             Text("\(index + 1)").font(.headline).foregroundStyle(up ? Palette.ink.opacity(0.55) : .white.opacity(0.65)).padding(14)
             VStack(spacing: 2) {
                 if up {
-                    Text(game.items[index].icon).font(.system(size: 65))
+                    ItemArtwork(item: game.items[index]).frame(maxWidth: .infinity, maxHeight: .infinity)
                     Text(game.items[index].displayName).font(.system(size: 27, weight: .heavy, design: .rounded)).minimumScaleFactor(0.7).lineLimit(1)
                 } else {
                     Text("?").font(.system(size: 85, weight: .heavy, design: .rounded)).foregroundStyle(.white)
                 }
             }
+            .padding(.horizontal, up ? 18 : 0)
+            .padding(.vertical, up ? 10 : 0)
             .frame(maxWidth: .infinity, maxHeight: .infinity)
         }
     }
 
     private var result: some View {
-        VStack(spacing: 18) {
+        VStack(spacing: 14) {
             Spacer()
             Text("✦  ✧  ✦").font(.largeTitle).foregroundStyle(Palette.orange)
             Text("そろった！").font(.system(size: 76, weight: .heavy, design: .rounded)).foregroundStyle(Palette.teal).minimumScaleFactor(0.7)
@@ -185,7 +191,7 @@ struct ContentView: View {
             HStack(spacing: 12) {
                 ForEach(game.matchedItems) { item in
                     VStack {
-                        Text(item.icon).font(.system(size: 44))
+                        ItemArtwork(item: item).frame(width: 114, height: 64)
                         Text(item.displayName).font(.title3.bold())
                     }
                     .frame(minWidth: 110).padding(12)

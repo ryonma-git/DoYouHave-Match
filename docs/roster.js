@@ -1,4 +1,4 @@
-import { loadConfig, assignments, statistics, classURL } from './room.js?v=2';
+import { loadConfig, assignments, statistics, classURL } from './room.js?v=3';
 
 const root = document.querySelector('#roster-page');
 try {

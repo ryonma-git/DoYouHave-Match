@@ -14,11 +14,13 @@
 		634B89D77B1F1EA4EA67E04A /* DoYouHaveMatchApp.swift in Sources */ = {isa = PBXBuildFile; fileRef = 4887D61432B42F0D3427C206 /* DoYouHaveMatchApp.swift */; };
 		7B3C064D8D2CB8BBC4FF2328 /* Assets.xcassets in Resources */ = {isa = PBXBuildFile; fileRef = C9B12852D6B3B7A672A246B4 /* Assets.xcassets */; };
 		8677A89E62E4BAA8F7A79389 /* ContentView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 8C622DD1ACC9BF9CEDA5483E /* ContentView.swift */; };
+		9F15C8B52A75D87512559ABB /* ItemArtwork.swift in Sources */ = {isa = PBXBuildFile; fileRef = 201E968367FB246C4DD6C98F /* ItemArtwork.swift */; };
 		A1EDF19B4E48A2A217CC6CD7 /* RosterView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 8668791060316D7B509C750E /* RosterView.swift */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXFileReference section */
 		009E5101A05C288AF42F6771 /* TeacherAccess.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = TeacherAccess.swift; sourceTree = "<group>"; };
+		201E968367FB246C4DD6C98F /* ItemArtwork.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ItemArtwork.swift; sourceTree = "<group>"; };
 		38EB1909600D7A78DDE827A6 /* DoYouHaveMatch.app */ = {isa = PBXFileReference; includeInIndex = 0; lastKnownFileType = wrapper.application; path = DoYouHaveMatch.app; sourceTree = BUILT_PRODUCTS_DIR; };
 		4887D61432B42F0D3427C206 /* DoYouHaveMatchApp.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = DoYouHaveMatchApp.swift; sourceTree = "<group>"; };
 		77F4B50B3D3024DE1411DD75 /* TeacherView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = TeacherView.swift; sourceTree = "<group>"; };
@@ -46,6 +48,7 @@
 				8C622DD1ACC9BF9CEDA5483E /* ContentView.swift */,
 				4887D61432B42F0D3427C206 /* DoYouHaveMatchApp.swift */,
 				D259B38E50AA5235E837C4C8 /* GameModel.swift */,
+				201E968367FB246C4DD6C98F /* ItemArtwork.swift */,
 				8668791060316D7B509C750E /* RosterView.swift */,
 				009E5101A05C288AF42F6771 /* TeacherAccess.swift */,
 				77F4B50B3D3024DE1411DD75 /* TeacherView.swift */,
@@ -135,6 +138,7 @@
 				8677A89E62E4BAA8F7A79389 /* ContentView.swift in Sources */,
 				634B89D77B1F1EA4EA67E04A /* DoYouHaveMatchApp.swift in Sources */,
 				30710A56AE066E4180B12B71 /* GameModel.swift in Sources */,
+				9F15C8B52A75D87512559ABB /* ItemArtwork.swift in Sources */,
 				A1EDF19B4E48A2A217CC6CD7 /* RosterView.swift in Sources */,
 				0C7D9933FBA78F3041AC90B0 /* TeacherAccess.swift in Sources */,
 				4B3F49EAA678B938F05F534E /* TeacherView.swift in Sources */,

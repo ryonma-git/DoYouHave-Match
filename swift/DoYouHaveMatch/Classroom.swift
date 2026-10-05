@@ -5,18 +5,19 @@ struct Item: Identifiable, Equatable {
     let displayName: String
     let japanese: String
     let icon: String
+    let imageName: String?
     let phraseForSentence: String
     static let pool: [Item] = [
-        .init(id: "pencil", displayName: "pencil", japanese: "えんぴつ", icon: "✏️", phraseForSentence: "a pencil"),
-        .init(id: "pen", displayName: "pen", japanese: "ペン", icon: "🖊️", phraseForSentence: "a pen"),
-        .init(id: "ruler", displayName: "ruler", japanese: "ものさし", icon: "📏", phraseForSentence: "a ruler"),
-        .init(id: "eraser", displayName: "eraser", japanese: "消しゴム", icon: "🧽", phraseForSentence: "an eraser"),
-        .init(id: "glue", displayName: "glue", japanese: "のり", icon: "🧴", phraseForSentence: "glue"),
-        .init(id: "scissors", displayName: "scissors", japanese: "はさみ", icon: "✂️", phraseForSentence: "scissors"),
-        .init(id: "notebook", displayName: "notebook", japanese: "ノート", icon: "📓", phraseForSentence: "a notebook"),
-        .init(id: "pencil-case", displayName: "pencil case", japanese: "ふでばこ", icon: "👝", phraseForSentence: "a pencil case"),
-        .init(id: "marker", displayName: "marker", japanese: "マーカー", icon: "🖍️", phraseForSentence: "a marker"),
-        .init(id: "crayon", displayName: "crayon", japanese: "クレヨン", icon: "🖍️", phraseForSentence: "a crayon")
+        .init(id: "pencil", displayName: "pencil", japanese: "えんぴつ", icon: "✏️", imageName: "item-pencil", phraseForSentence: "a pencil"),
+        .init(id: "pen", displayName: "pen", japanese: "ペン", icon: "🖊️", imageName: "item-pen", phraseForSentence: "a pen"),
+        .init(id: "ruler", displayName: "ruler", japanese: "ものさし", icon: "📏", imageName: "item-ruler", phraseForSentence: "a ruler"),
+        .init(id: "eraser", displayName: "eraser", japanese: "消しゴム", icon: "🧽", imageName: "item-eraser", phraseForSentence: "an eraser"),
+        .init(id: "glue", displayName: "glue", japanese: "のり", icon: "🧴", imageName: "item-glue", phraseForSentence: "glue"),
+        .init(id: "scissors", displayName: "scissors", japanese: "はさみ", icon: "✂️", imageName: "item-scissors", phraseForSentence: "scissors"),
+        .init(id: "notebook", displayName: "notebook", japanese: "ノート", icon: "📓", imageName: "item-notebook", phraseForSentence: "a notebook"),
+        .init(id: "pencil-case", displayName: "pencil case", japanese: "ふでばこ", icon: "👝", imageName: "item-pencil-case", phraseForSentence: "a pencil case"),
+        .init(id: "marker", displayName: "marker", japanese: "マーカー", icon: "🖍️", imageName: "item-marker", phraseForSentence: "a marker"),
+        .init(id: "crayon", displayName: "crayon", japanese: "クレヨン", icon: "🖍️", imageName: nil, phraseForSentence: "a crayon")
     ]
 }
 

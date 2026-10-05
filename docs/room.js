@@ -1,4 +1,4 @@
-import { ITEMS } from './items.js';
+import { ITEMS } from './items.js?v=2';
 
 export const PATTERN_SEEDS = [1729, 4093, 7919, 12347, 24593, 49157, 65537, 99991];
 export const defaultConfig = () => ({ version: 1, selected: ITEMS.map(item => item.id), present: Array.from({ length: 40 }, (_, i) => i + 1), pattern: 0 });

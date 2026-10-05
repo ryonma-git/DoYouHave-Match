@@ -55,7 +55,9 @@ Web版: https://ryonma-git.github.io/DoYouHave-Match/
 
 ## 画像
 
-現在は仮の絵文字です。既存の生成画像の場所が提供されたら差し替えます。`docs/art/`の以前の候補画像はゲーム・管理画面では使用していません。
+提供された `Eigo-Flashcards-Prototype/01_images/curriculum/school_things` の生成画像を9種類に使用しています（pencil、pen、ruler、eraser、glue、scissors、notebook、pencil case、marker）。クレヨンの画像は含まれていなかったため、その1種類だけ絵文字です。
+
+元画像を変更せず、配信用に800×450のJPEGへ縮小しました。Webの `docs/images/` とSwiftのアセットカタログに同じ画像を収録しています（9枚合計約440KB）。ゲームのカード・結果画面・先生用アイテム一覧で使用します。`docs/art/`の以前の候補画像は使用していません。
 
 ## 開発・起動
 
