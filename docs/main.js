@@ -80,7 +80,8 @@ function render() {
     case PHASE.RESULT:
       content = `<section class="result"><div class="celebration" aria-hidden="true">✦ ✧ ✦</div><h1>そろった！</h1><p class="eyebrow">2人が持っているもの</p><div class="result-items">${game.matchedItems.map(item => `<div class="result-item">${item.image ? `<img class="result-picture" src="${item.image}" width="800" height="450" alt="">` : `<span aria-hidden="true">${item.icon}</span>`}<strong lang="en">${item.name}</strong></div>`).join('')}</div><p class="sentence-hint">英語で言ってみよう</p><p class="sentence" lang="en">${sentence(game.matchedItems)}</p><div class="result-time">タイム <strong>${formatTime(game.elapsedSeconds)}</strong></div>${button('もう一度あそぶ', 'reset', 'primary')}</section>`;
   }
-  root.innerHTML = `<div class="shell ${game.phase}">${content}</div>`;
+  const navigation = game.phase === PHASE.SETUP ? '' : '<nav class="game-navigation" aria-label="ゲームメニュー"><button type="button" class="back-to-title" data-action="reset">タイトルに戻る</button></nav>';
+  root.innerHTML = `<div class="shell ${game.phase}">${navigation}${content}</div>`;
   const matchButton = root.querySelector('[data-action="match"]');
   if (matchButton) matchButton.disabled = game.matchCount < 3;
 }

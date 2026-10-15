@@ -2,6 +2,8 @@
 * { box-sizing: border-box; }
 body { margin: 0; min-height: 100vh; min-height: 100dvh; background: radial-gradient(circle at 10% 5%, #fff8dc 0, transparent 35%), #f7f3e9; }
 button { font: inherit; -webkit-tap-highlight-color: transparent; touch-action: manipulation; cursor: pointer; }
+.game-navigation { width: min(100%, 720px); display: flex; justify-content: flex-start; }
+.back-to-title { min-height: 44px; padding: 8px 14px; border: 1px solid #83b9ad; border-radius: 12px; background: #fffefa; color: #256b65; font-weight: 700; }
 .shell { width: min(100%, 1000px); min-height: 100vh; min-height: 100dvh; margin: auto; padding: max(24px, env(safe-area-inset-top)) 28px max(24px, env(safe-area-inset-bottom)); display: flex; flex-direction: column; align-items: center; justify-content: space-between; gap: 20px; }
 header { text-align: center; }
 h1 { font-size: clamp(2.1rem, 5vw, 3.6rem); line-height: 1.1; margin: 4px 0; letter-spacing: -.045em; }

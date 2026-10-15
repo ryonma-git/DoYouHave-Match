@@ -22,9 +22,25 @@ struct ContentView: View {
     var body: some View {
         GeometryReader { geometry in
             VStack(spacing: 18) {
+                if game.phase != .setup {
+                    HStack {
+                        Button("タイトルに戻る") {
+                            game.reset()
+                            attendanceText = ""
+                            setupError = ""
+                            titleTaps = []
+                        }
+                        .font(.headline)
+                        .padding(.horizontal, 14)
+                        .frame(minHeight: 44)
+                        .background(.white, in: RoundedRectangle(cornerRadius: 12))
+                        .foregroundStyle(Palette.teal)
+                        Spacer()
+                    }
+                }
                 switch game.phase {
                 case .setup: welcome
-                case .memorize, .ready, .playing: gameScreen(height: geometry.size.height)
+                case .memorize, .ready, .playing: gameScreen(height: geometry.size.height - 62)
                 case .result: result
                 }
             }
