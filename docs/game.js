@@ -3,6 +3,7 @@ import { assignments, defaultConfig } from './room.js?v=3';
 export { ITEMS };
 
 export const PHASE = Object.freeze({ SETUP: 'setup', MEMORIZE: 'memorize', READY: 'ready', PLAYING: 'playing', RESULT: 'result' });
+export const SCORING = Object.freeze({ base: 1000, timeLimit: 180, reveal: 10, next: 20, overtime: 2 });
 
 export function sentence(items) {
   const phrases = items.map(item => item.phrase);
@@ -29,9 +30,10 @@ export class Game {
     this.items = [];
     this.faceUp = [false, false, false, false];
     this.startedAt = null;
-    this.penaltySeconds = 0;
+    this.revealCount = 0;
+    this.nextCount = 0;
     this.finishedSeconds = null;
-    this.penaltyNotice = false;
+    this.penaltyNotice = '';
   }
 
   begin(number, config = defaultConfig()) {
@@ -60,7 +62,13 @@ export class Game {
   get elapsedSeconds() {
     if (this.phase === PHASE.RESULT) return this.finishedSeconds;
     if (this.startedAt === null) return 0;
-    return Math.floor((this.now() - this.startedAt) / 1000) + this.penaltySeconds;
+    return Math.max(0, Math.floor((this.now() - this.startedAt) / 1000));
+  }
+
+  get remainingSeconds() { return Math.max(0, SCORING.timeLimit - this.elapsedSeconds); }
+  get overtimeSeconds() { return Math.max(0, this.elapsedSeconds - SCORING.timeLimit); }
+  get score() {
+    return Math.max(0, SCORING.base + this.remainingSeconds - this.revealCount * SCORING.reveal - this.nextCount * SCORING.next - this.overtimeSeconds * SCORING.overtime);
   }
 
   get matchCount() { return this.faceUp.filter(Boolean).length; }
@@ -69,9 +77,9 @@ export class Game {
 
   flip(index) {
     if (this.phase !== PHASE.PLAYING || !Number.isInteger(index) || index < 0 || index >= 4) return;
-    if (this.faceUp[index]) {
-      this.penaltySeconds += 5;
-      this.penaltyNotice = true;
+    if (!this.faceUp[index]) {
+      this.revealCount += 1;
+      this.penaltyNotice = `カードを見た：−${SCORING.reveal}点`;
     }
     this.faceUp[index] = !this.faceUp[index];
   }
@@ -79,7 +87,8 @@ export class Game {
   nextPerson() {
     if (this.phase !== PHASE.PLAYING) return;
     this.faceUp.fill(false);
-    this.penaltyNotice = false;
+    this.nextCount += 1;
+    this.penaltyNotice = `次の友だちへ：−${SCORING.next}点`;
   }
 
   match() {

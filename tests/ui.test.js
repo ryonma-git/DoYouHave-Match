@@ -31,7 +31,7 @@ function environment(path = '', authenticated = false) {
   };
   setURL(`https://example.org/DoYouHave-Match/${path}`);
   globalThis.history = { replaceState: (_state, _unused, url) => setURL(url) };
-  globalThis.setInterval = () => 0;
+  globalThis.setInterval = callback => { env.tick = callback; return 0; };
   env.click = selector => {
     const element = document.querySelector(selector);
     assert.ok(element, selector);
@@ -173,4 +173,41 @@ test('a pupil receives the configured deal and an absent number cannot start', a
   env.click('[data-action=match]');
   assert.equal(document.querySelectorAll('.result-item').length, 3);
   assert.deepEqual([...document.querySelectorAll('.result-picture')].map(img => img.getAttribute('src')), deal.slice(0, 3).filter(item => item.image).map(item => item.image));
+});
+
+test('score UI charges all reveals and skips, updates overtime and freezes the final score', async () => {
+  const originalNow = Date.now;
+  let now = 0;
+  Date.now = () => now;
+  try {
+    const env = environment();
+    await env.load('main');
+    document.querySelector('#attendance').value = '1';
+    env.submit('#attendance-form');
+    env.click('[data-action=ready]');
+    assert.match(document.querySelector('.score-rules').textContent, /持ち時間3分/);
+    env.click('[data-action=start]');
+    assert.equal(document.querySelector('#score').textContent, '1180');
+    assert.equal(document.querySelector('#timer').textContent, '03:00');
+    for (let i = 0; i < 4; i++) env.click(`[data-flip="${i}"]`);
+    env.click('[data-action=next]');
+    assert.equal(document.querySelector('#score').textContent, '1120');
+    assert.match(document.querySelector('.penalty').textContent, /−20点/);
+    now = 181000;
+    env.tick();
+    assert.equal(document.querySelector('#timer-label').textContent, '時間オーバー');
+    assert.equal(document.querySelector('#timer').textContent, '00:01');
+    assert.equal(document.querySelector('#score').textContent, '938');
+    for (let i = 0; i < 3; i++) env.click(`[data-flip="${i}"]`);
+    env.click('[data-action=match]');
+    assert.equal(document.querySelector('.result-score strong').textContent, '908点');
+    assert.match(document.querySelector('.score-breakdown').textContent, /カード 7回：−70点/);
+    now = 999000;
+    env.tick();
+    assert.equal(document.querySelector('.result-score strong').textContent, '908点');
+    env.click('.back-to-title');
+    assert.ok(document.querySelector('#attendance'));
+  } finally {
+    Date.now = originalNow;
+  }
 });

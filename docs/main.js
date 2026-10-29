@@ -1,4 +1,4 @@
-import { Game, PHASE, formatTime, sentence, ITEMS } from './game.js?v=2';
+import { Game, PHASE, formatTime, sentence, ITEMS, SCORING } from './game.js?v=3';
 import { loadConfig, encodeConfig } from './room.js?v=3';
 import { canAttempt, failureCount, unlock, revokeAccess } from './teacher-access.js?v=2';
 
@@ -62,6 +62,10 @@ function button(label, action, extra = '') {
   return `<button class="action ${extra}" data-action="${action}">${label}</button>`;
 }
 
+function scoreRules() {
+  return `<p class="score-rules">持ち時間${SCORING.timeLimit / 60}分・基本${SCORING.base}点＋残り1秒につき1点<br>カードを開く：−${SCORING.reveal}点 ／ 次の友だちへ：−${SCORING.next}点<br>時間切れ後：1秒につき−${SCORING.overtime}点（0点まで）。時間切れでも続けられます。</p>`;
+}
+
 function render() {
   let content;
   switch (game.phase) {
@@ -72,13 +76,13 @@ function render() {
       content = `<header><p class="eyebrow">カードと場所をおぼえよう</p><h1>自分の持ち物</h1></header>${cards()}<footer>${button('おぼえた！', 'ready', 'primary')}</footer>`;
       break;
     case PHASE.READY:
-      content = `<header><p class="eyebrow">友だちに英語で聞いてみよう</p><h1>じゅんびはいい？</h1></header>${cards()}<footer>${button('スタート', 'start', 'primary')}</footer>`;
+      content = `<header><p class="eyebrow">友だちに英語で聞いてみよう</p><h1>じゅんびはいい？</h1></header>${cards()}${scoreRules()}<footer>${button('スタート', 'start', 'primary')}</footer>`;
       break;
     case PHASE.PLAYING:
-      content = `<header class="play-header"><div class="time-badge"><span>タイム</span><strong id="timer">${formatTime(game.elapsedSeconds)}</strong></div><div class="match-count"><strong>${game.matchCount} / 3</strong><span>3枚そろえよう</span></div></header>${cards()}<div class="penalty ${game.penaltyNotice ? 'visible' : ''}" role="status">+5秒</div><footer class="dual">${button('次の友だちへ', 'next', 'secondary')}${button('そろった！', 'match', `primary ${game.matchCount < 3 ? 'inactive' : ''}`)}</footer>`;
+      content = `<header class="play-header"><div class="time-badge"><span id="timer-label">${game.overtimeSeconds > 0 ? '時間オーバー' : 'のこり時間'}</span><strong id="timer">${formatTime(game.overtimeSeconds > 0 ? game.overtimeSeconds : game.remainingSeconds)}</strong></div><div class="score-badge"><span>いまの点数</span><strong><span id="score">${game.score}</span>点</strong></div><div class="match-count"><strong>${game.matchCount} / 3</strong><span>3枚そろえよう</span></div></header>${cards()}<div class="penalty ${game.penaltyNotice ? 'visible' : ''}" role="status">${game.penaltyNotice}</div><footer class="dual">${button('次の友だちへ', 'next', 'secondary')}${button('そろった！', 'match', `primary ${game.matchCount < 3 ? 'inactive' : ''}`)}</footer>`;
       break;
     case PHASE.RESULT:
-      content = `<section class="result"><div class="celebration" aria-hidden="true">✦ ✧ ✦</div><h1>そろった！</h1><p class="eyebrow">2人が持っているもの</p><div class="result-items">${game.matchedItems.map(item => `<div class="result-item">${item.image ? `<img class="result-picture" src="${item.image}" width="800" height="450" alt="">` : `<span aria-hidden="true">${item.icon}</span>`}<strong lang="en">${item.name}</strong></div>`).join('')}</div><p class="sentence-hint">英語で言ってみよう</p><p class="sentence" lang="en">${sentence(game.matchedItems)}</p><div class="result-time">タイム <strong>${formatTime(game.elapsedSeconds)}</strong></div>${button('もう一度あそぶ', 'reset', 'primary')}</section>`;
+      content = `<section class="result"><div class="celebration" aria-hidden="true">✦ ✧ ✦</div><h1>そろった！</h1><p class="eyebrow">2人が持っているもの</p><div class="result-items">${game.matchedItems.map(item => `<div class="result-item">${item.image ? `<img class="result-picture" src="${item.image}" width="800" height="450" alt="">` : `<span aria-hidden="true">${item.icon}</span>`}<strong lang="en">${item.name}</strong></div>`).join('')}</div><p class="sentence-hint">英語で言ってみよう</p><p class="sentence" lang="en">${sentence(game.matchedItems)}</p><div class="result-score">今回の点数<strong>${game.score}点</strong></div><p class="score-breakdown">基本${SCORING.base}点 ＋ のこり時間 ${game.remainingSeconds}点<br>カード ${game.revealCount}回：−${game.revealCount * SCORING.reveal}点 ／ 次の友だち ${game.nextCount}回：−${game.nextCount * SCORING.next}点<br>時間オーバー ${game.overtimeSeconds}秒：−${game.overtimeSeconds * SCORING.overtime}点<br>かかった時間 ${formatTime(game.elapsedSeconds)}（点数は0点まで）</p>${button('もう一度あそぶ', 'reset', 'primary')}</section>`;
   }
   const navigation = game.phase === PHASE.SETUP ? '' : '<nav class="game-navigation" aria-label="ゲームメニュー"><button type="button" class="back-to-title" data-action="reset">タイトルに戻る</button></nav>';
   root.innerHTML = `<div class="shell ${game.phase}">${navigation}${content}</div>`;
@@ -120,24 +124,30 @@ root.addEventListener('click', event => {
   const flip = event.target.closest('[data-flip]');
   if (flip) {
     game.flip(Number(flip.dataset.flip));
-    render();
-    if (game.penaltyNotice) {
-      clearTimeout(noticeTimeout);
-      noticeTimeout = setTimeout(() => { game.penaltyNotice = false; render(); }, 1100);
-    }
+    renderWithNotice();
     return;
   }
   const action = event.target.closest('[data-action]')?.dataset.action;
   if (!action) return;
   clearTimeout(noticeTimeout);
   ({ ready: () => game.ready(), start: () => game.start(), next: () => game.nextPerson(), match: () => game.match(), reset: () => game.reset() })[action]();
-  render();
+  renderWithNotice();
 });
+
+function renderWithNotice() {
+  clearTimeout(noticeTimeout);
+  render();
+  if (game.penaltyNotice) {
+    noticeTimeout = setTimeout(() => { game.penaltyNotice = ''; render(); }, 1100);
+  }
+}
 
 setInterval(() => {
   if (game.phase === PHASE.PLAYING) {
     const timer = document.querySelector('#timer');
-    if (timer) timer.textContent = formatTime(game.elapsedSeconds);
+    if (timer) timer.textContent = formatTime(game.overtimeSeconds > 0 ? game.overtimeSeconds : game.remainingSeconds);
+    document.querySelector('#timer-label').textContent = game.overtimeSeconds > 0 ? '時間オーバー' : 'のこり時間';
+    document.querySelector('#score').textContent = game.score;
   }
 }, 200);
 

@@ -41,7 +41,7 @@ struct ContentView: View {
                 switch game.phase {
                 case .setup: welcome
                 case .memorize, .ready, .playing: gameScreen(height: geometry.size.height - 62)
-                case .result: result
+                case .result: ScrollView { result }
                 }
             }
             .frame(maxWidth: 820, maxHeight: .infinity)
@@ -137,8 +137,13 @@ struct ContentView: View {
             if game.phase == .playing {
                 HStack {
                     VStack(alignment: .leading) {
-                        eyebrow("タイム")
-                        Text(game.formattedTime).font(.system(size: 42, weight: .heavy, design: .rounded)).monospacedDigit()
+                        eyebrow(game.overtimeSeconds > 0 ? "時間オーバー" : "のこり時間")
+                        Text(game.countdown).font(.system(size: 38, weight: .heavy, design: .rounded)).monospacedDigit()
+                    }
+                    Spacer()
+                    VStack {
+                        eyebrow("いまの点数")
+                        Text("\(game.score)点").font(.system(size: 38, weight: .heavy, design: .rounded)).monospacedDigit().foregroundStyle(Palette.teal)
                     }
                     Spacer()
                     VStack(alignment: .trailing) {
@@ -157,7 +162,7 @@ struct ContentView: View {
                 ForEach(game.items.indices, id: \.self) { index in
                     Button { withAnimation(.easeInOut(duration: 0.18)) { game.flip(index) } } label: {
                         card(index)
-                            .frame(height: max(110, min(220, (height - 245) / 2)))
+                            .frame(height: max(100, min(220, (height - (game.phase == .ready ? 335 : 245)) / 2)))
                     }
                     .buttonStyle(.plain)
                     .disabled(game.phase != .playing)
@@ -165,13 +170,17 @@ struct ContentView: View {
                 }
             }
             if game.phase == .playing {
-                Text(game.showPenalty ? "+5秒" : " ").font(.title3.bold()).foregroundStyle(Color(red: 0.84, green: 0.4, blue: 0.21)).frame(height: 28)
+                Text(game.penaltyNotice.isEmpty ? " " : game.penaltyNotice).font(.title3.bold()).foregroundStyle(Color(red: 0.84, green: 0.4, blue: 0.21)).frame(height: 28)
                 HStack(spacing: 16) {
                     action("次の友だちへ", primary: false, action: game.nextPerson)
                     action("そろった！", primary: true, enabled: game.matchCount >= 3, action: game.match)
                 }
             } else {
                 Spacer(minLength: 0)
+                if game.phase == .ready {
+                    Text("持ち時間\(Scoring.timeLimit / 60)分・基本\(Scoring.base)点＋残り1秒につき1点\nカードを開く：−\(Scoring.reveal)点 ／ 次の友だちへ：−\(Scoring.next)点\n時間切れ後：1秒につき−\(Scoring.overtime)点（0点まで）。時間切れでも続けられます。")
+                        .font(.subheadline).multilineTextAlignment(.center).foregroundStyle(Palette.teal)
+                }
                 action(game.phase == .memorize ? "おぼえた！" : "スタート", primary: true, action: game.phase == .memorize ? game.ready : game.start)
             }
         }
@@ -216,8 +225,10 @@ struct ContentView: View {
             }
             Text("英語で言ってみよう").font(.headline).foregroundStyle(Palette.teal)
             Text(game.sentence).font(.title2.bold()).multilineTextAlignment(.center).padding(.vertical, 8)
-            eyebrow("タイム")
-            Text(game.formattedTime).font(.system(size: 54, weight: .heavy, design: .rounded)).monospacedDigit()
+            eyebrow("今回の点数")
+            Text("\(game.score)点").font(.system(size: 64, weight: .heavy, design: .rounded)).monospacedDigit().foregroundStyle(Palette.teal)
+            Text("基本\(Scoring.base)点 ＋ のこり時間 \(game.remainingSeconds)点\nカード \(game.revealCount)回：−\(game.revealCount * Scoring.reveal)点 ／ 次の友だち \(game.nextCount)回：−\(game.nextCount * Scoring.next)点\n時間オーバー \(game.overtimeSeconds)秒：−\(game.overtimeSeconds * Scoring.overtime)点\nかかった時間 \(game.formattedTime)（点数は0点まで）")
+                .font(.subheadline).multilineTextAlignment(.center).foregroundStyle(Palette.teal)
             action("もう一度あそぶ", primary: true, action: game.reset)
             Spacer()
         }
